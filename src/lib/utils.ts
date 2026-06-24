@@ -35,11 +35,13 @@ export function getInitials(name: string) {
 
 export function formatCurrency(
   value: number,
-  options: Intl.NumberFormatOptions = {}
+  options: Intl.NumberFormatOptions & { noDecimals?: boolean } = {}
 ) {
+  const { noDecimals, ...intlOptions } = options;
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-    ...options,
+    ...(noDecimals ? { maximumFractionDigits: 0, minimumFractionDigits: 0 } : {}),
+    ...intlOptions,
   }).format(value);
 }

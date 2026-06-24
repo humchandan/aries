@@ -66,42 +66,42 @@ const walletsList = [
     id: 'metamask',
     name: 'MetaMask',
     icon: <MetaMaskIcon />,
-    checkInstalled: () => typeof window !== 'undefined' && !!(window.ethereum?.isMetaMask || window.ethereum?.providers?.some(p => p.isMetaMask)),
+    checkInstalled: () => typeof window !== 'undefined' && !!(window.ethereum?.isMetaMask || window.ethereum?.providers?.some((p: any) => p.isMetaMask)),
     installUrl: 'https://metamask.io/download/'
   },
   {
     id: 'coinbase',
     name: 'Coinbase Wallet',
     icon: <CoinbaseIcon />,
-    checkInstalled: () => typeof window !== 'undefined' && !!(window.coinbaseWalletExtension || window.ethereum?.isCoinbaseWallet || window.ethereum?.isCoinbase || window.ethereum?.providers?.some(p => p.isCoinbaseWallet || p.isCoinbase)),
+    checkInstalled: () => typeof window !== 'undefined' && !!(window.coinbaseWalletExtension || window.ethereum?.isCoinbaseWallet || window.ethereum?.isCoinbase || window.ethereum?.providers?.some((p: any) => p.isCoinbaseWallet || p.isCoinbase)),
     installUrl: 'https://www.coinbase.com/wallet'
   },
   {
     id: 'phantom',
     name: 'Phantom',
     icon: <PhantomIcon />,
-    checkInstalled: () => typeof window !== 'undefined' && !!(window.phantom?.ethereum || window.ethereum?.isPhantom || window.ethereum?.providers?.some(p => p.isPhantom)),
+    checkInstalled: () => typeof window !== 'undefined' && !!(window.phantom?.ethereum || window.ethereum?.isPhantom || window.ethereum?.providers?.some((p: any) => p.isPhantom)),
     installUrl: 'https://phantom.app/download'
   },
   {
     id: 'trust',
     name: 'Trust Wallet',
     icon: <TrustWalletIcon />,
-    checkInstalled: () => typeof window !== 'undefined' && !!(window.trustWallet || window.ethereum?.isTrust || window.ethereum?.isTrustWallet || window.ethereum?.providers?.some(p => p.isTrust || p.isTrustWallet)),
+    checkInstalled: () => typeof window !== 'undefined' && !!(window.trustWallet || window.ethereum?.isTrust || window.ethereum?.isTrustWallet || window.ethereum?.providers?.some((p: any) => p.isTrust || p.isTrustWallet)),
     installUrl: 'https://trustwallet.com/download'
   },
   {
     id: 'okx',
     name: 'OKX Wallet',
     icon: <OKXIcon />,
-    checkInstalled: () => typeof window !== 'undefined' && !!(window.okxwallet || window.ethereum?.isOKX || window.ethereum?.isOKXHeaders || window.ethereum?.providers?.some(p => p.isOKX || p.isOKXHeaders)),
+    checkInstalled: () => typeof window !== 'undefined' && !!(window.okxwallet || window.ethereum?.isOKX || window.ethereum?.isOKXHeaders || window.ethereum?.providers?.some((p: any) => p.isOKX || p.isOKXHeaders)),
     installUrl: 'https://www.okx.com/web3'
   },
   {
     id: 'brave',
     name: 'Brave Wallet',
     icon: <BraveIcon />,
-    checkInstalled: () => typeof window !== 'undefined' && !!(window.ethereum?.isBraveWallet || window.ethereum?.providers?.some(p => p.isBraveWallet)),
+    checkInstalled: () => typeof window !== 'undefined' && !!(window.ethereum?.isBraveWallet || window.ethereum?.providers?.some((p: any) => p.isBraveWallet)),
     installUrl: 'https://brave.com/wallet/'
   },
   {

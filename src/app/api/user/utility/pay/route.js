@@ -1,7 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth';
 
-
 export async function POST(request) {
   const walletAddress = verifyToken(request);
   if (!walletAddress) {

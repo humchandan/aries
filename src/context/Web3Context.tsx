@@ -269,7 +269,7 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // ── Connect To Specific Wallet ───────────────────────────────────────────────
-  const connectToWallet = useCallback(async (walletId) => {
+  const connectToWallet = useCallback(async (walletId: string) => {
     setConnectingWalletId(walletId);
     try {
       const rawProvider = getWalletProvider(walletId);
@@ -307,7 +307,7 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
       setIsConnectModalOpen(false);
     } catch (err) {
       console.error('Failed to connect to wallet:', err);
-      alert(err.message || 'Connection failed.');
+      alert((err as Error).message || 'Connection failed.');
     } finally {
       setConnectingWalletId(null);
     }

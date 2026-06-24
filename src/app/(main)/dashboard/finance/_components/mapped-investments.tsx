@@ -59,7 +59,7 @@ export function MappedInvestments() {
       });
 
       const receipt = await waitForTransactionReceiptWithRetry(
-        signer.provider || provider,
+        (signer.provider || provider)!,
         tx.hash
       );
 

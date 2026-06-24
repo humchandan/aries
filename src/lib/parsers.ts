@@ -62,7 +62,7 @@ export const getFiltersStateParser = <TData>(columnIds?: string[] | Set<string>)
           return null;
         }
 
-        return result.data as ExtendedColumnFilter<TData>[];
+        return result.data as unknown as ExtendedColumnFilter<TData>[];
       } catch {
         return null;
       }

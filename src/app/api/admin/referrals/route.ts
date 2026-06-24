@@ -45,6 +45,7 @@ export async function GET(request: Request) {
       const sponsor = userMap.get(user.sponsorAddress.toLowerCase());
       return {
         walletAddress: user.walletAddress,
+        sponsorAddress: user.sponsorAddress,
         name: user.name,
         mobile: user.mobile,
         rank: user.rank,

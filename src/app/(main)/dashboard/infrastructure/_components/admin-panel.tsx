@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   ChevronDown,
@@ -448,7 +449,16 @@ function CatalogSection({ jwtToken }: { jwtToken: string }) {
               {(selectedCat.services || []).map((svc: any) => (
                 editSvcId === svc.id ? (
                   <div key={svc.id} className="p-3 bg-zinc-900/60 rounded-lg border border-zinc-700/60 space-y-2">
-                    <Input value={editSvcName} onChange={e => setEditSvcName(e.target.value)} placeholder="Service name" className="text-xs h-8" />
+                    <Select value={editSvcName} onValueChange={setEditSvcName}>
+                      <SelectTrigger className="text-xs h-8">
+                        <SelectValue placeholder="Select Service Name" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {["Mobile Recharge", "Electricity Bill", "Water Bill", "DTH / Cable TV", "Broadband / Landline", "Gas Pipeline", "Gas Cylinder", "Fastag", "Municipal Taxes", "Loan Repayment", "Credit Card", "Insurance Premium"].map(svc => (
+                          <SelectItem key={svc} value={svc}>{svc}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <Input value={editSvcDesc} onChange={e => setEditSvcDesc(e.target.value)} placeholder="Description" className="text-xs h-8" />
                     <div className="flex gap-2">
                       <Input value={editSvcMin} onChange={e => setEditSvcMin(e.target.value)} placeholder="Min ARES" className="text-xs h-8" />
@@ -513,7 +523,16 @@ function CatalogSection({ jwtToken }: { jwtToken: string }) {
               ))}
             </div>
             <div className="space-y-2 pt-2">
-              <Input value={newSvcName} onChange={e => setNewSvcName(e.target.value)} placeholder="Service name" className="text-xs h-8" />
+              <Select value={newSvcName} onValueChange={setNewSvcName}>
+                <SelectTrigger className="text-xs h-8">
+                  <SelectValue placeholder="Select Service Name" />
+                </SelectTrigger>
+                <SelectContent>
+                  {["Mobile Recharge", "Electricity Bill", "Water Bill", "DTH / Cable TV", "Broadband / Landline", "Gas Pipeline", "Gas Cylinder", "Fastag", "Municipal Taxes", "Loan Repayment", "Credit Card", "Insurance Premium"].map(svc => (
+                    <SelectItem key={svc} value={svc}>{svc}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Input value={newSvcDesc} onChange={e => setNewSvcDesc(e.target.value)} placeholder="Description" className="text-xs h-8" />
               <div className="flex gap-2">
                 <Input value={newSvcMin} onChange={e => setNewSvcMin(e.target.value)} placeholder="Min ARES" className="text-xs h-8" />

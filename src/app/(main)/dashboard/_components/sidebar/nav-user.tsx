@@ -26,7 +26,7 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
-  const { walletAddress, disconnect } = useWeb3();
+  const { userAddress: walletAddress, disconnectWallet: disconnect } = useWeb3();
 
   const handleCopy = () => {
     if (walletAddress) {
