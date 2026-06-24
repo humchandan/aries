@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth';
-import { getCustodianBalance } from '@/lib/ethers';
+
 
 export async function POST(request) {
   const walletAddress = verifyToken(request);

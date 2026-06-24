@@ -13,6 +13,7 @@ import { MappedHistory } from "./_components/mapped-history";
 import { MappedAccounts } from "./_components/mapped-accounts";
 import { MappedTransactions } from "./_components/mapped-transactions";
 import { MappedWithdrawals } from "./_components/mapped-withdrawals";
+import { ProxyWalletManager } from "./_components/proxy-wallet-manager";
 
 export default function Page() {
   const formattedDate = format(new Date(), "EEEE, do MMMM yyyy");
@@ -38,13 +39,14 @@ export default function Page() {
 
         <TabsContent value="30-days" className="flex flex-col gap-4">
           <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-12">
-            <div className="xl:col-span-6">
+            <div className="flex flex-col gap-4 xl:col-span-6">
               <OverviewKpis />
+              <MappedInvestments />
+              <MappedHistory />
             </div>
 
             <div className="flex flex-col gap-4 xl:col-span-6">
-              <MappedInvestments />
-              <MappedHistory />
+              <ProxyWalletManager />
             </div>
           </div>
 

@@ -38,7 +38,7 @@ export function ActionsManagerQueue() {
         <div className="flex h-full flex-col gap-3">
           <div className="grid grid-cols-2 gap-2">
             <StatCard label="Actionable deals" value="7" />
-            <StatCard label="Revenue in play" value={formatCurrency(811000, { noDecimals: true })} mono />
+            <StatCard label="Revenue in play" value={formatCurrency(811000, )} mono />
             <StatCard label="Owners engaged" value="3" />
             <StatCard label="Median risk" value="72" mono />
           </div>
@@ -47,26 +47,26 @@ export function ActionsManagerQueue() {
             <div className="flex items-center justify-between gap-2">
               <p className="text-muted-foreground text-xs">Intervention mix</p>
               <Badge variant="outline" className="h-5 px-2 text-[11px] tabular-nums">
-                Escalate {formatCurrency(174000, { noDecimals: true })}
+                Escalate {formatCurrency(174000, )}
               </Badge>
             </div>
             <div className="space-y-1.5">
               <div className="flex items-center justify-between rounded-md border bg-background/70 px-2.5 py-1.5">
                 <span className="text-xs">Escalate</span>
                 <span className="text-muted-foreground text-xs tabular-nums">
-                  1 deals · 14% · {formatCurrency(174000, { noDecimals: true })}
+                  1 deals · 14% · {formatCurrency(174000, )}
                 </span>
               </div>
               <div className="flex items-center justify-between rounded-md border bg-background/70 px-2.5 py-1.5">
                 <span className="text-xs">Coach</span>
                 <span className="text-muted-foreground text-xs tabular-nums">
-                  4 deals · 57% · {formatCurrency(478000, { noDecimals: true })}
+                  4 deals · 57% · {formatCurrency(478000, )}
                 </span>
               </div>
               <div className="flex items-center justify-between rounded-md border bg-background/70 px-2.5 py-1.5">
                 <span className="text-xs">Reforecast</span>
                 <span className="text-muted-foreground text-xs tabular-nums">
-                  2 deals · 29% · {formatCurrency(159000, { noDecimals: true })}
+                  2 deals · 29% · {formatCurrency(159000, )}
                 </span>
               </div>
             </div>
@@ -82,7 +82,7 @@ export function ActionsManagerQueue() {
               <div className="flex items-center justify-between gap-2 rounded-md border bg-background/70 px-2.5 py-1.5">
                 <span>Coach queue</span>
                 <span className="text-muted-foreground tabular-nums">
-                  4 deals · {formatCurrency(478000, { noDecimals: true })}
+                  4 deals · {formatCurrency(478000, )}
                 </span>
               </div>
 
@@ -94,7 +94,7 @@ export function ActionsManagerQueue() {
               <div className="flex items-center justify-between gap-2 rounded-md border bg-background/70 px-2.5 py-1.5">
                 <span>Stale pipeline</span>
                 <span className="text-muted-foreground tabular-nums">
-                  8 deals · {formatCurrency(1151000, { noDecimals: true })}
+                  8 deals · {formatCurrency(1151000, )}
                 </span>
               </div>
             </div>
