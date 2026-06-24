@@ -7,15 +7,12 @@ import {
   GraduationCap,
   Kanban,
   LayoutDashboard,
-  ListTodo,
   Lock,
   type LucideIcon,
   Mail,
   MessageSquare,
   ReceiptText,
   ShieldCheck,
-  ShoppingBag,
-  SquareArrowUpRight,
   Trophy,
   Users,
   Zap,
@@ -89,10 +86,10 @@ export const sidebarItems: NavGroup[] = [
         icon: Gauge,
       },
       {
-        id: "productivity",
-        title: "Productivity",
-        url: "/dashboard/productivity",
-        icon: ListTodo,
+        id: "profile",
+        title: "Profile",
+        url: "/dashboard/profile",
+        icon: Fingerprint,
       },
       {
         id: "ecommerce",
@@ -179,5 +176,4 @@ export const sidebarItems: NavGroup[] = [
       },
     ],
   },
-
 ];

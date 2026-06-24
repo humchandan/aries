@@ -1,19 +1,17 @@
 import { format } from "date-fns";
 
-
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { BalanceDistributionCard } from "./_components/balance-distribution-card";
-import { MappedInvestments } from "./_components/mapped-investments";
-import { OverviewKpis } from "./_components/overview-kpis";
 import { LifetimeEarningsCard } from "./_components/lifetime-earnings-card";
-import { UpcomingTransactions } from "./_components/upcoming-transactions";
-import { MappedHistory } from "./_components/mapped-history";
 import { MappedAccounts } from "./_components/mapped-accounts";
+import { MappedHistory } from "./_components/mapped-history";
+import { MappedInvestments } from "./_components/mapped-investments";
 import { MappedTransactions } from "./_components/mapped-transactions";
 import { MappedWithdrawals } from "./_components/mapped-withdrawals";
+import { OverviewKpis } from "./_components/overview-kpis";
 import { ProxyWalletManager } from "./_components/proxy-wallet-manager";
+import { UpcomingTransactions } from "./_components/upcoming-transactions";
 
 export default function Page() {
   const formattedDate = format(new Date(), "EEEE, do MMMM yyyy");
@@ -33,14 +31,14 @@ export default function Page() {
             <TabsTrigger value="custom">Transactions</TabsTrigger>
           </TabsList>
 
-          <div className="flex flex-wrap items-center gap-3">
-          </div>
+          <div className="flex flex-wrap items-center gap-3"></div>
         </div>
 
         <TabsContent value="30-days" className="flex flex-col gap-4">
+          <OverviewKpis />
+
           <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-12">
             <div className="flex flex-col gap-4 xl:col-span-6">
-              <OverviewKpis />
               <MappedInvestments />
               <MappedHistory />
             </div>
