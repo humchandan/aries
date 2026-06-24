@@ -15,6 +15,10 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useWeb3 } from "@/hooks/useWeb3";
 
+import { ethers } from 'ethers';
+import { waitForTransactionReceiptWithRetry } from "@/lib/txWaiter";
+
+
 // Icon mapping helper
 const getIcon = (iconStr: string) => {
   if (iconStr.includes('mobile') || iconStr.includes('phone')) return <Smartphone className="h-6 w-6" />;
@@ -43,12 +47,27 @@ export default function UtilityPortalPage() {
   const [editBiller, setEditBiller] = useState<any>(null);
   const [editFields, setEditFields] = useState<any>({});
 
-  const { jwtToken, userProfile } = useWeb3();
+  
+  const { userAddress, jwtToken, userProfile, provider, signer, loadProfile } = useWeb3();
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [proxyAddress, setProxyAddress] = useState<string | null>(null);
+  const [custodianBalance, setCustodianBalance] = useState(0);
+  const [recipient, setRecipient] = useState('');
+  const [transferAmount, setTransferAmount] = useState('');
+  const [depositAmount, setDepositAmount] = useState('');
+  const CUSTODY_WALLET_ADDRESS = "0xD01c1BFC96E22A9470C186E69E0A97e18EfF23e6";
+
   const isBanned = userProfile?.isBanned;
 
   useEffect(() => {
     if (jwtToken) fetchData();
   }, [jwtToken]);
+
+  useEffect(() => {
+    if (userProfile && userProfile.proxyAddress) {
+      setProxyAddress(userProfile.proxyAddress);
+    }
+  }, [userProfile]);
 
   const fetchData = async () => {
     if (!jwtToken) return;
@@ -72,6 +91,7 @@ export default function UtilityPortalPage() {
       if (balRes.ok) {
         const balData = await balRes.json();
         setBalance(balData.balance || 0);
+        setTransactions(balData.transactions || []);
       }
     } catch (err) {
       toast.error("Failed to load utility data");
@@ -79,6 +99,24 @@ export default function UtilityPortalPage() {
       setLoading(false);
     }
   };
+
+
+
+
+
+
+
+
+
+
+  const formattedProxy = proxyAddress 
+    ? `${proxyAddress.substring(0, 6)}...${proxyAddress.substring(proxyAddress.length - 4)}`
+    : '';
+  const formattedCustody = `${CUSTODY_WALLET_ADDRESS.substring(0, 6)}...${CUSTODY_WALLET_ADDRESS.substring(CUSTODY_WALLET_ADDRESS.length - 4)}`;
+
+  const transferAmountNum = parseFloat(transferAmount) || 0;
+  const transferFee = transferAmountNum * 0.05;
+  const netReceived = Math.max(0, transferAmountNum - transferFee);
 
   const handleSelectService = (service: any) => {
     setSelectedService(service);
@@ -209,6 +247,7 @@ export default function UtilityPortalPage() {
     );
   }
 
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
@@ -216,12 +255,78 @@ export default function UtilityPortalPage() {
         <p className="text-muted-foreground text-sm">Pay bills, top-up mobile, and manage your saved utility services.</p>
       </div>
 
+      {/* Top Section - Catalog */}
+      <div className="w-full">
+        <Card className="h-full">
+            <CardHeader>
+              <CardTitle>Service Catalog</CardTitle>
+              <CardDescription>Select a category to view available utility services</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue={categories[0]?.name} className="w-full">
+                <div className="w-full overflow-x-auto pb-2 mb-4 scrollbar-hide">
+                  <TabsList className="flex w-max min-w-full h-auto p-1 justify-start bg-transparent gap-2">
+                    {categories.map((cat: any) => (
+                      <TabsTrigger 
+                        key={cat.id} 
+                        value={cat.name}
+                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground border bg-card whitespace-nowrap flex-shrink-0"
+                      >
+                        <div className="flex items-center gap-2">
+                          {getIcon(cat.icon || cat.name)}
+                          <span>{cat.name}</span>
+                        </div>
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </div>
+                
+                {categories.map((cat: any) => (
+                  <TabsContent key={cat.id} value={cat.name} className="space-y-4">
+                    {cat.services.length === 0 ? (
+                      <div className="py-12 text-center text-muted-foreground">
+                        No active services found in this category.
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {cat.services.map((service: any) => (
+                          <div 
+                            key={service.id} 
+                            className={`p-5 rounded-xl border transition-all cursor-pointer hover:border-primary hover:shadow-md ${selectedService?.id === service.id ? 'border-primary ring-1 ring-primary shadow-sm bg-primary/5' : 'bg-card'}`}
+                            onClick={() => handleSelectService(service)}
+                          >
+                            <div className="flex items-start justify-between mb-2">
+                              <h3 className="font-semibold text-base">{service.name}</h3>
+                              <div className="bg-primary/10 text-primary p-2 rounded-full">
+                                {getIcon(cat.icon || cat.name)}
+                              </div>
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-4 line-clamp-2 min-h-[40px]">
+                              {service.description}
+                            </p>
+                            <div className="text-xs font-medium text-muted-foreground bg-muted/50 inline-flex items-center px-2 py-1 rounded-md">
+                              Limits: {service.minAmount} - {service.maxAmount} ARES
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </TabsContent>
+                ))}
+              </Tabs>
+            </CardContent>
+          </Card>
+      </div>
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Left Column - Payment Form & Saved Billers */}
-        <div className="flex flex-col gap-6 lg:col-span-5 xl:col-span-4">
+        {/* Left Column - Form & Billers & Wallet */}
+        <div className="flex flex-col gap-6 lg:col-span-6 xl:col-span-6">
+
           
-          {/* Payment Form Card */}
-          <Card className={selectedService ? "border-primary" : ""}>
+
+          
+
+<Card className={selectedService ? "border-primary" : ""}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="h-5 w-5 text-primary" />
@@ -343,9 +448,7 @@ export default function UtilityPortalPage() {
               )}
             </CardContent>
           </Card>
-
-          {/* Saved Billers Card */}
-          <Card>
+<Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Landmark className="h-5 w-5 text-muted-foreground" />
@@ -406,69 +509,44 @@ export default function UtilityPortalPage() {
           </Card>
         </div>
 
-        {/* Right Column - Catalog */}
-        <div className="flex flex-col gap-6 lg:col-span-7 xl:col-span-8">
+        {/* Right Column - Balance & Transactions */}
+        <div className="flex flex-col gap-6 lg:col-span-6 xl:col-span-6">
+
+
           <Card className="h-full">
             <CardHeader>
-              <CardTitle>Service Catalog</CardTitle>
-              <CardDescription>Select a category to view available utility services</CardDescription>
+              <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">History</div>
+              <CardTitle>Transaction History</CardTitle>
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue={categories[0]?.name} className="w-full">
-                <TabsList className="w-full flex flex-wrap h-auto p-1 mb-6 justify-start bg-transparent gap-2">
-                  {categories.map((cat: any) => (
-                    <TabsTrigger 
-                      key={cat.id} 
-                      value={cat.name}
-                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground border bg-card"
-                    >
-                      <div className="flex items-center gap-2">
-                        {getIcon(cat.icon || cat.name)}
-                        <span>{cat.name}</span>
+              <div className="space-y-2 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+                {transactions.length === 0 ? (
+                  <div className="py-8 text-center text-muted-foreground text-sm border border-dashed rounded-xl">No transactions yet.</div>
+                ) : (
+                  transactions.map((tx: any) => {
+                    const isReceived = tx.type === 'DEPOSIT' || tx.type === 'TRANSFER_IN' || tx.type === 'CLAIM_DIRECT';
+                    return (
+                      <div key={tx.id} className="flex items-center justify-between p-3 bg-muted/40 rounded-xl border hover:bg-muted/60 transition-colors">
+                        <div className="flex-1 min-w-0 pr-3">
+                          <div className="text-xs font-bold mb-1">{tx.type}</div>
+                          <div className="text-[10px] text-muted-foreground truncate">{tx.description}</div>
+                          <div className="text-[9px] text-muted-foreground/60 mt-0.5">{new Date(tx.timestamp).toLocaleString()}</div>
+                        </div>
+                        <span className={`text-xs font-semibold font-mono flex-shrink-0 px-2.5 py-1 rounded-md bg-background border ${isReceived ? 'text-emerald-500' : 'text-red-500'}`}>
+                          {isReceived ? '+' : '-'}{isReceived ? tx.netAmount?.toFixed(2) : tx.amount?.toFixed(2)}
+                        </span>
                       </div>
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-                
-                {categories.map((cat: any) => (
-                  <TabsContent key={cat.id} value={cat.name} className="space-y-4">
-                    {cat.services.length === 0 ? (
-                      <div className="py-12 text-center text-muted-foreground">
-                        No active services found in this category.
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {cat.services.map((service: any) => (
-                          <div 
-                            key={service.id} 
-                            className={`p-5 rounded-xl border transition-all cursor-pointer hover:border-primary hover:shadow-md ${selectedService?.id === service.id ? 'border-primary ring-1 ring-primary shadow-sm bg-primary/5' : 'bg-card'}`}
-                            onClick={() => handleSelectService(service)}
-                          >
-                            <div className="flex items-start justify-between mb-2">
-                              <h3 className="font-semibold text-base">{service.name}</h3>
-                              <div className="bg-primary/10 text-primary p-2 rounded-full">
-                                {getIcon(cat.icon || cat.name)}
-                              </div>
-                            </div>
-                            <p className="text-sm text-muted-foreground mb-4 line-clamp-2 min-h-[40px]">
-                              {service.description}
-                            </p>
-                            <div className="text-xs font-medium text-muted-foreground bg-muted/50 inline-flex items-center px-2 py-1 rounded-md">
-                              Limits: {service.minAmount} - {service.maxAmount} ARES
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </TabsContent>
-                ))}
-              </Tabs>
+                    );
+                  })
+                )}
+              </div>
             </CardContent>
           </Card>
+
         </div>
       </div>
 
-      {/* Edit Biller Dialog */}
+{/* Edit Biller Dialog */}
       <Dialog open={!!editBiller} onOpenChange={(open) => !open && setEditBiller(null)}>
         <DialogContent>
           <DialogHeader>
@@ -508,4 +586,5 @@ export default function UtilityPortalPage() {
       </Dialog>
     </div>
   );
+
 }
