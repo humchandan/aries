@@ -3,7 +3,9 @@
 import Link from "next/link";
 
 import { CircleHelp, ClipboardList, Command, Database, File, Search, Settings } from "lucide-react";
+import { useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
+import { useWeb3 } from "@/hooks/useWeb3";
 
 import {
   Sidebar,
@@ -69,8 +71,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     })),
   );
 
+  const { isAdmin } = useWeb3();
+
   const variant = isSynced ? sidebarVariant : props.variant;
   const collapsible = isSynced ? sidebarCollapsible : props.collapsible;
+
+  const filteredItems = useMemo(() => {
+    return sidebarItems.map(group => {
+      if (isAdmin) return group;
+      return {
+        ...group,
+        items: group.items.filter(item => item.id !== 'infrastructure')
+      };
+    });
+  }, [isAdmin]);
 
   return (
     <Sidebar {...props} variant={variant} collapsible={collapsible}>
@@ -87,7 +101,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={sidebarItems} />
+        <NavMain items={filteredItems} />
         {/* <NavDocuments items={data.documents} /> */}
         {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>

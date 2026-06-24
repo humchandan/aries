@@ -9,6 +9,7 @@ import { fontVars } from "@/lib/fonts/registry";
 import { PREFERENCE_DEFAULTS } from "@/lib/preferences/preferences-config";
 import { ThemeBootScript } from "@/scripts/theme-boot";
 import { PreferencesStoreProvider } from "@/stores/preferences/preferences-provider";
+import { Web3ProviderWrapper } from "@/components/layout/web3-provider-wrapper";
 
 import "./globals.css";
 
@@ -45,8 +46,10 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             navbarStyle={navbar_style}
             font={font}
           >
-            {children}
-            <Toaster />
+            <Web3ProviderWrapper>
+              {children}
+              <Toaster />
+            </Web3ProviderWrapper>
           </PreferencesStoreProvider>
         </TooltipProvider>
       </body>
