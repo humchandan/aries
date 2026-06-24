@@ -1,42 +1,45 @@
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const getInitials = (str: string): string => {
-  if (typeof str !== "string" || !str.trim()) return "?";
+export function formatBytes(
+  bytes: number,
+  opts: {
+    decimals?: number;
+    sizeType?: 'accurate' | 'normal';
+  } = {}
+) {
+  const { decimals = 0, sizeType = 'normal' } = opts;
 
-  return (
-    str
-      .trim()
-      .split(/\s+/)
-      .filter(Boolean)
-      .map((word) => word[0])
-      .join("")
-      .toUpperCase() || "?"
-  );
-};
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const accurateSizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB'];
+  if (bytes === 0) return '0 Byte';
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return `${(bytes / Math.pow(1024, i)).toFixed(decimals)} ${
+    sizeType === 'accurate' ? (accurateSizes[i] ?? 'Bytest') : (sizes[i] ?? 'Bytes')
+  }`;
+}
+
+export function getInitials(name: string) {
+  if (!name) return "??";
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
 
 export function formatCurrency(
-  amount: number,
-  opts?: {
-    currency?: string;
-    locale?: string;
-    minimumFractionDigits?: number;
-    maximumFractionDigits?: number;
-    noDecimals?: boolean;
-  },
+  value: number,
+  options: Intl.NumberFormatOptions = {}
 ) {
-  const { currency = "USD", locale = "en-US", minimumFractionDigits, maximumFractionDigits, noDecimals } = opts ?? {};
-
-  const formatOptions: Intl.NumberFormatOptions = {
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency,
-    minimumFractionDigits: noDecimals ? 0 : minimumFractionDigits,
-    maximumFractionDigits: noDecimals ? 0 : maximumFractionDigits,
-  };
-
-  return new Intl.NumberFormat(locale, formatOptions).format(amount);
+    currency: "USD",
+    ...options,
+  }).format(value);
 }

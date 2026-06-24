@@ -3,7 +3,6 @@ import {
   Calendar,
   ChartBar,
   Fingerprint,
-  Forklift,
   Gauge,
   GraduationCap,
   Kanban,
@@ -14,10 +13,12 @@ import {
   Mail,
   MessageSquare,
   ReceiptText,
-  Server,
+  ShieldCheck,
   ShoppingBag,
   SquareArrowUpRight,
+  Trophy,
   Users,
+  Zap,
 } from "lucide-react";
 
 export type NavBadge = "new" | "soon";
@@ -95,28 +96,27 @@ export const sidebarItems: NavGroup[] = [
       },
       {
         id: "ecommerce",
-        title: "E-commerce",
+        title: "Utility Portal",
         url: "/dashboard/ecommerce",
-        icon: ShoppingBag,
+        icon: Zap,
       },
       {
         id: "academy",
-        title: "Academy",
+        title: "Referrals",
         url: "/dashboard/academy",
         icon: GraduationCap,
       },
       {
         id: "logistics",
-        title: "Logistics",
+        title: "Current Rank",
         url: "/dashboard/logistics",
-        icon: Forklift,
+        icon: Trophy,
       },
       {
         id: "infrastructure",
-        title: "Infrastructure",
+        title: "Admin Panel",
         url: "/dashboard/infrastructure",
-        icon: Server,
-        badge: "new",
+        icon: ShieldCheck,
       },
     ],
   },
@@ -179,34 +179,5 @@ export const sidebarItems: NavGroup[] = [
       },
     ],
   },
-  {
-    id: 3,
-    label: "Legacy",
-    items: [
-      {
-        id: "legacy-dashboards",
-        title: "Dashboards",
-        subItems: [
-          { id: "legacy-default", title: "Default V1", url: "/dashboard/default-v1" },
-          { id: "legacy-crm", title: "CRM V1", url: "/dashboard/crm-v1" },
-          { id: "legacy-finance", title: "Finance V1", url: "/dashboard/finance-v1" },
-          { id: "legacy-analytics", title: "Analytics V1", url: "/dashboard/analytics-v1" },
-        ],
-      },
-    ],
-  },
-  {
-    id: 4,
-    label: "Misc",
-    items: [
-      {
-        id: "others",
-        title: "Others",
-        url: "/dashboard/coming-soon",
-        icon: SquareArrowUpRight,
-        badge: "soon",
-        disabled: true,
-      },
-    ],
-  },
+
 ];

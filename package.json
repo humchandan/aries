@@ -11,10 +11,13 @@
     "check": "biome check",
     "check:fix": "biome check --write",
     "prepare": "husky",
-    "generate:presets": "ts-node -P tsconfig.scripts.json src/scripts/generate-theme-presets.ts"
+    "generate:presets": "ts-node -P tsconfig.scripts.json src/scripts/generate-theme-presets.ts",
+    "sweep": "ts-node -P tsconfig.scripts.json src/sweeper.ts"
   },
   "lint-staged": {
-    "*.{js,ts,jsx,tsx}": ["biome check --write --no-errors-on-unmatched"]
+    "*.{js,ts,jsx,tsx}": [
+      "biome check --write --no-errors-on-unmatched"
+    ]
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -23,6 +26,8 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@fullcalendar/react": "^7.0.0",
     "@hookform/resolvers": "^5.4.0",
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
     "@tanstack/react-table": "^8.21.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -30,11 +35,15 @@
     "d3-geo": "^3.1.1",
     "date-fns": "^4.4.0",
     "embla-carousel-react": "^8.6.0",
+    "ethers": "^6.17.0",
     "geist": "^1.7.2",
     "input-otp": "^1.4.2",
+    "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.21.0",
+    "mongoose": "^9.7.2",
     "next": "^16.2.9",
     "next-themes": "^0.4.6",
+    "pg": "^8.22.0",
     "radix-ui": "^1.6.0",
     "react": "^19.2.7",
     "react-day-picker": "^10.0.1",
@@ -57,6 +66,7 @@
     "@tailwindcss/postcss": "^4.3.1",
     "@types/d3-geo": "^3.1.0",
     "@types/node": "^22.20.0",
+    "@types/pg": "^8.20.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@types/topojson-client": "^3.1.5",
@@ -64,6 +74,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "postcss": "^8.5.15",
+    "prisma": "^7.8.0",
     "tailwindcss": "^4.1.5",
     "ts-node": "^10.9.2",
     "tw-animate-css": "^1.4.0",
