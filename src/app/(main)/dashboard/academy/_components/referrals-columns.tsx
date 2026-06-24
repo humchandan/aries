@@ -218,29 +218,44 @@ export const referralsColumns: ColumnDef<any>[] = [
   {
     id: "actions",
     header: () => <div className="text-right">Actions</div>,
-    cell: ({ row }) => (
-      <div className="text-right">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              aria-label={`Open actions for ${row.original.name}`}
-              className="size-8 rounded-md text-muted-foreground hover:bg-muted/50"
-              size="icon-sm"
-              variant="ghost"
-            >
-              <MoreHorizontal className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <a href="/dashboard/logistics">View in Referral Tree</a>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Copy Wallet Address</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    ),
+    cell: ({ row }) => {
+      const walletAddr = row.original.walletAddress;
+      return (
+        <div className="text-right">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                aria-label={`Open actions for ${row.original.name}`}
+                className="size-8 rounded-md text-muted-foreground hover:bg-muted/50"
+                size="icon-sm"
+                variant="ghost"
+              >
+                <MoreHorizontal className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => {
+                  window.location.href = `/dashboard/logistics?highlight=${encodeURIComponent(walletAddr)}`;
+                }}
+              >
+                View in Referral Tree
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => {
+                  navigator.clipboard.writeText(walletAddr).then(() => {
+                    // Optional: could use toast here
+                  });
+                }}
+              >
+                Copy Wallet Address
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      );
+    },
     enableHiding: false,
     enableSorting: false,
   },

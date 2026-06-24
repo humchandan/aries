@@ -48,10 +48,10 @@ export function MappedAccounts() {
       const supportResponse = await fetch("/contracts/PortalFactory.json");
       const supportData = await supportResponse.json();
       const factoryContract = new ethers.Contract(supportData.address, supportData.abi, signer);
-      const userId = ethers.keccak256(ethers.toUtf8Bytes("portal_user_" + userAddress.toLowerCase()));
+      const userId = ethers.keccak256(ethers.toUtf8Bytes("portal_user_" + userAddress!.toLowerCase()));
       
       const tx = await factoryContract.createPortal(userId, { gasPrice: ethers.parseUnits("1.5", "gwei") });
-      const receipt = await waitForTransactionReceiptWithRetry(signer.provider || provider, tx.hash);
+      const receipt = await waitForTransactionReceiptWithRetry((signer.provider || provider)!, tx.hash);
       
       let proxyAddr = null;
       for (const log of receipt.logs) {
@@ -93,7 +93,7 @@ export function MappedAccounts() {
         value: ethers.parseEther(amount.toString()),
         gasPrice: ethers.parseUnits("1.5", "gwei")
       });
-      await waitForTransactionReceiptWithRetry(signer.provider || provider, tx.hash);
+      await waitForTransactionReceiptWithRetry((signer.provider || provider)!, tx.hash);
       alert(`Successfully deposited ${amount} ARES!`);
       setDepositAmount('');
       loadLedgerAndProxy();

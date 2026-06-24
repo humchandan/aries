@@ -59,9 +59,12 @@ export async function GET(request: Request) {
     const calculateTeamBusiness = (addr: string): number => {
       let total = 0;
       const stack = [addr];
+      const visited = new Set<string>();
       while (stack.length > 0) {
         const current = stack.pop()!;
-        // Optional: Include user's own staking or just downstream? Usually team business includes their own.
+        if (visited.has(current)) continue;
+        visited.add(current);
+        
         // Let's include their own:
         total += stakingMap.get(current) || 0;
         
@@ -75,6 +78,8 @@ export async function GET(request: Request) {
 
     // 4. Traverse up to 10 levels to find the referrals
     const referrals: any[] = [];
+    const bfsVisited = new Set<string>();
+    bfsVisited.add(walletAddress.toLowerCase());
     
     // BFS to get up to 10 levels
     let queue: { addr: string, level: number, uplineName: string }[] = [];
@@ -90,6 +95,8 @@ export async function GET(request: Request) {
       const { addr, level, uplineName } = queue.shift()!;
       
       if (level > 10) continue; // Only up to 10 levels
+      if (bfsVisited.has(addr)) continue;
+      bfsVisited.add(addr);
 
       const userNode = userMap.get(addr);
       if (userNode) {
@@ -98,6 +105,7 @@ export async function GET(request: Request) {
 
         referrals.push({
           walletAddress: userNode.walletAddress,
+          sponsorAddress: userNode.sponsorAddress,
           name: userNode.name,
           // Hide mobile if level > 1
           mobile: level === 1 ? userNode.mobile : '***-***-****',
@@ -112,7 +120,9 @@ export async function GET(request: Request) {
         if (level < 10) {
           const nodeChildren = childrenMap.get(addr) || [];
           for (const childAddr of nodeChildren) {
-            queue.push({ addr: childAddr, level: level + 1, uplineName: userNode.name });
+            if (!bfsVisited.has(childAddr)) {
+              queue.push({ addr: childAddr, level: level + 1, uplineName: userNode.name });
+            }
           }
         }
       }
