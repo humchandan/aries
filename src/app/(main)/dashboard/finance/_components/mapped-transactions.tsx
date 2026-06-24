@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useWeb3 } from '@/hooks/useWeb3';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import React, { useEffect, useState } from "react";
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useWeb3 } from "@/hooks/useWeb3";
 
 export function MappedTransactions() {
   const { userAddress, jwtToken } = useWeb3();
@@ -12,7 +13,7 @@ export function MappedTransactions() {
     if (!jwtToken || !userAddress) return;
     try {
       const balanceRes = await fetch(`/api/ledger/balance`, {
-        headers: { 'Authorization': `Bearer ${jwtToken}` }
+        headers: { Authorization: `Bearer ${jwtToken}` },
       });
       const balanceData = await balanceRes.json();
       setTransactions(balanceData.transactions || []);
@@ -39,7 +40,7 @@ export function MappedTransactions() {
         ) : (
           <div className="space-y-4">
             {transactions.map((tx) => {
-              const isReceived = tx.type === 'DEPOSIT' || tx.type === 'TRANSFER_IN' || tx.type === 'CLAIM_DIRECT';
+              const isReceived = tx.type === "DEPOSIT" || tx.type === "TRANSFER_IN" || tx.type === "CLAIM_DIRECT";
               return (
                 <div key={tx.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
@@ -47,8 +48,9 @@ export function MappedTransactions() {
                     <div className="text-xs text-muted-foreground">{tx.description}</div>
                     <div className="text-xs text-muted-foreground mt-1">{new Date(tx.timestamp).toLocaleString()}</div>
                   </div>
-                  <div className={`font-mono font-semibold ${isReceived ? 'text-emerald-500' : 'text-red-500'}`}>
-                    {isReceived ? '+' : '-'}{isReceived ? tx.netAmount?.toFixed(2) : tx.amount?.toFixed(2)}
+                  <div className={`font-mono font-semibold ${isReceived ? "text-emerald-500" : "text-red-500"}`}>
+                    {isReceived ? "+" : "-"}
+                    {isReceived ? tx.netAmount?.toFixed(2) : tx.amount?.toFixed(2)}
                   </div>
                 </div>
               );

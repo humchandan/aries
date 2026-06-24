@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+
 import { CurrentRank } from "./_components/current-rank";
 import { ReferralTree } from "./_components/referral-tree";
 

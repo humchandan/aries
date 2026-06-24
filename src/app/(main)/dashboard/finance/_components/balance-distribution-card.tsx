@@ -1,11 +1,12 @@
 "use client";
 
 import * as React from "react";
+
 import { Label, Pie, PieChart } from "recharts";
-import { useWeb3 } from "@/hooks/useWeb3";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { useWeb3 } from "@/hooks/useWeb3";
 import { formatCurrency } from "@/lib/utils";
 
 type BalanceKey = "unclaimed" | "metamask" | "utility" | "remaining";
@@ -53,7 +54,7 @@ export function BalanceDistributionCard() {
     const totalClaimed = parseFloat(userProfile.totalClaimed) || 0;
     const maxLimit = selfInvestment * 2.5;
 
-    let initialAccrued = baseYield + (elapsedSeconds * ratePerSec);
+    let initialAccrued = baseYield + elapsedSeconds * ratePerSec;
     if (totalClaimed + initialAccrued > maxLimit) {
       initialAccrued = maxLimit - totalClaimed;
     }
@@ -76,12 +77,12 @@ export function BalanceDistributionCard() {
   const selfInvestment = userProfile?.selfInvestment ? parseFloat(userProfile.selfInvestment) : 0;
   const lifetimeEarnings = selfInvestment * 2.5;
   const totalClaimed = userProfile?.totalClaimed ? parseFloat(userProfile.totalClaimed) : 0;
-  
+
   // Withdrawals breakdown (handle safely if not populated yet)
   const metamaskWithdrawals = userProfile?.metamaskWithdrawals ? parseFloat(userProfile.metamaskWithdrawals) : 0;
   const utilityWithdrawals = userProfile?.utilityWithdrawals ? parseFloat(userProfile.utilityWithdrawals) : 0;
 
-  // Since claims might be older data where destination wasn't tracked properly, 
+  // Since claims might be older data where destination wasn't tracked properly,
   // ensure metamask + utility doesn't exceed totalClaimed, or fill gaps.
   const untrackedWithdrawals = Math.max(0, totalClaimed - (metamaskWithdrawals + utilityWithdrawals));
   const effectiveUtilityWithdrawals = utilityWithdrawals + untrackedWithdrawals;
@@ -155,7 +156,11 @@ export function BalanceDistributionCard() {
 
                   return (
                     <text dominantBaseline="middle" textAnchor="middle" x={viewBox.cx} y={viewBox.cy}>
-                      <tspan className="fill-muted-foreground text-[10px] font-bold uppercase tracking-widest" x={viewBox.cx} y={(viewBox.cy ?? 0) - 12}>
+                      <tspan
+                        className="fill-muted-foreground text-[10px] font-bold uppercase tracking-widest"
+                        x={viewBox.cx}
+                        y={(viewBox.cy ?? 0) - 12}
+                      >
                         Live Yield
                       </tspan>
                       <tspan
@@ -186,8 +191,14 @@ export function BalanceDistributionCard() {
               <div className="grid grid-cols-[1fr_auto] items-end gap-3" key={i}>
                 <div className="min-w-0">
                   <div className="flex min-w-0 items-center gap-2 mb-1">
-                    <span aria-hidden="true" className="h-2 w-2 rounded-full shadow-sm" style={{ backgroundColor: item.color }} />
-                    <p className="truncate text-muted-foreground text-[11px] uppercase tracking-wider font-semibold">{item.label}</p>
+                    <span
+                      aria-hidden="true"
+                      className="h-2 w-2 rounded-full shadow-sm"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <p className="truncate text-muted-foreground text-[11px] uppercase tracking-wider font-semibold">
+                      {item.label}
+                    </p>
                   </div>
                   <p className="font-mono text-sm tabular-nums text-white">
                     {item.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ARES

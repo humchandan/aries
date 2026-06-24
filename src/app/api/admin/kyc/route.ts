@@ -1,10 +1,10 @@
-import { rootUser } from "@/data/users";
-import { verifyToken } from "@/lib/auth";
+import { verifyAdmin, verifyToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request: Request) {
   const walletAddress = verifyToken(request);
-  if (!walletAddress || walletAddress.toLowerCase() !== rootUser.walletAddress.toLowerCase()) {
+  const isAdmin = await verifyAdmin(walletAddress);
+  if (!isAdmin) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -36,7 +36,8 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const walletAddress = verifyToken(request);
-  if (!walletAddress || walletAddress.toLowerCase() !== rootUser.walletAddress.toLowerCase()) {
+  const isAdmin = await verifyAdmin(walletAddress);
+  if (!isAdmin) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 

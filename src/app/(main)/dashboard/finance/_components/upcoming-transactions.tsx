@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
+import Link from "next/link";
+
 import { addMonths, format, startOfMonth } from "date-fns";
 import { ArrowRight, ChevronRight, Loader2, Zap } from "lucide-react";
-import Link from "next/link";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Item, ItemActions, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from "@/components/ui/item";
@@ -22,7 +24,7 @@ export function UpcomingTransactions() {
     const fetchBillers = async () => {
       try {
         const res = await fetch("/api/user/utility/billers", {
-          headers: { Authorization: `Bearer ${jwtToken}` }
+          headers: { Authorization: `Bearer ${jwtToken}` },
         });
         if (res.ok) {
           const data = await res.json();
@@ -58,15 +60,15 @@ export function UpcomingTransactions() {
           {billers.length > 0 && (
             <div className="flex w-max items-center gap-2 rounded-md border border-border bg-muted/70 px-2 py-1.5 text-sm">
               <Zap className="size-4 fill-primary text-primary" />
-              <span className="text-muted-foreground">
-                Visit the Utility Portal to clear dues on time.
-              </span>
+              <span className="text-muted-foreground">Visit the Utility Portal to clear dues on time.</span>
             </div>
           )}
         </div>
 
         {loading ? (
-          <div className="py-6 flex justify-center"><Loader2 className="animate-spin w-5 h-5 text-zinc-500" /></div>
+          <div className="py-6 flex justify-center">
+            <Loader2 className="animate-spin w-5 h-5 text-zinc-500" />
+          </div>
         ) : billers.length > 0 ? (
           <ItemGroup>
             {billers.map((biller) => (
@@ -91,7 +93,10 @@ export function UpcomingTransactions() {
         ) : (
           <div className="py-8 mt-2 text-center text-zinc-500 text-sm border border-dashed border-zinc-800 rounded-xl">
             <p className="mb-3">No saved billers found.</p>
-            <Link href="/dashboard/ecommerce" className="text-primary font-medium hover:underline flex items-center justify-center gap-1">
+            <Link
+              href="/dashboard/ecommerce"
+              className="text-primary font-medium hover:underline flex items-center justify-center gap-1"
+            >
               Go to Utility Portal <ArrowRight className="w-3 h-3" />
             </Link>
           </div>

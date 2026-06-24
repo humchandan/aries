@@ -65,7 +65,8 @@ export default function UtilityPortalPage() {
 
   useEffect(() => {
     if (jwtToken) fetchData();
-  }, [jwtToken, fetchData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jwtToken]);
 
   useEffect(() => {
     if (userProfile?.proxyAddress) {
@@ -73,7 +74,7 @@ export default function UtilityPortalPage() {
     }
   }, [userProfile]);
 
-  const fetchData = async () => {
+  async function fetchData() {
     if (!jwtToken) return;
     setLoading(true);
     try {
@@ -97,12 +98,12 @@ export default function UtilityPortalPage() {
         setBalance(balData.balance || 0);
         setTransactions(balData.transactions || []);
       }
-    } catch (_err) {
+    } catch (err) {
       toast.error("Failed to load utility data");
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   const _formattedProxy = proxyAddress
     ? `${proxyAddress.substring(0, 6)}...${proxyAddress.substring(proxyAddress.length - 4)}`

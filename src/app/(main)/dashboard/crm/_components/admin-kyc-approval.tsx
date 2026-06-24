@@ -15,28 +15,28 @@ export function AdminKycApproval() {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchKycUsers = async () => {
-    if (!jwtToken || !isAdmin) return;
-    try {
-      setLoading(true);
-      const res = await fetch("/api/admin/kyc", {
-        headers: { Authorization: `Bearer ${jwtToken}` },
-      });
-      const data = await res.json();
-      if (data.success) {
-        setUsers(data.users);
-      }
-    } catch (err) {
-      console.error("Failed to fetch KYC users", err);
-      toast.error("Failed to load KYC records");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchKycUsers = async () => {
+      if (!jwtToken || !isAdmin) return;
+      try {
+        setLoading(true);
+        const res = await fetch("/api/admin/kyc", {
+          headers: { Authorization: `Bearer ${jwtToken}` },
+        });
+        const data = await res.json();
+        if (data.success) {
+          setUsers(data.users);
+        }
+      } catch (err) {
+        console.error("Failed to fetch KYC users", err);
+        toast.error("Failed to load KYC records");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchKycUsers();
-  }, [fetchKycUsers]);
+  }, [jwtToken, isAdmin]);
 
   const updateStatus = async (userAddress: string, status: string) => {
     try {

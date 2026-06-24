@@ -1,19 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
+
 import { ethers } from "ethers";
+import { Loader2, Zap } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { useWeb3 } from "@/hooks/useWeb3";
 import { waitForTransactionReceiptWithRetry } from "@/lib/txWaiter";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Loader2, Zap } from "lucide-react";
 
 export function MappedInvestments() {
   const { jwtToken, provider, signer, loadProfile } = useWeb3();
@@ -46,11 +42,7 @@ export function MappedInvestments() {
         throw new Error("Failed to load contract details");
       }
       const supportData = await res.json();
-      const portalContract = new ethers.Contract(
-        supportData.address,
-        supportData.abi,
-        signer
-      );
+      const portalContract = new ethers.Contract(supportData.address, supportData.abi, signer);
 
       const valueWei = ethers.parseEther(val.toString());
       const tx = await portalContract.purchasePlan({
@@ -58,10 +50,7 @@ export function MappedInvestments() {
         gasPrice: ethers.parseUnits("1.5", "gwei"),
       });
 
-      const receipt = await waitForTransactionReceiptWithRetry(
-        (signer.provider || provider)!,
-        tx.hash
-      );
+      const receipt = await waitForTransactionReceiptWithRetry((signer.provider || provider)!, tx.hash);
 
       // Submit to backend
       const dbRes = await fetch("/api/user/stake", {
@@ -142,17 +131,10 @@ export function MappedInvestments() {
               ARES
             </span>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Must be 100 ARES or higher, in increments of 100.
-          </p>
+          <p className="text-xs text-muted-foreground">Must be 100 ARES or higher, in increments of 100.</p>
         </div>
 
-        <Button
-          className="w-full font-semibold"
-          size="lg"
-          onClick={handleBuyPlan}
-          disabled={txLoading}
-        >
+        <Button className="w-full font-semibold" size="lg" onClick={handleBuyPlan} disabled={txLoading}>
           {txLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...

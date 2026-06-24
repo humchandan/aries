@@ -1,11 +1,11 @@
-const { PrismaClient } = require('@prisma/client');
-const { PrismaPg } = require('@prisma/adapter-pg');
-const { Pool } = require('pg');
-const dotenv = require('dotenv');
-const path = require('path');
+const { PrismaClient } = require("@prisma/client");
+const { PrismaPg } = require("@prisma/adapter-pg");
+const { Pool } = require("pg");
+const dotenv = require("dotenv");
+const path = require("path");
 
 // Load environment variables
-dotenv.config({ path: path.join(__dirname, '../.env') });
+dotenv.config({ path: path.join(__dirname, "../.env") });
 
 if (!process.env.DATABASE_URL) {
   console.error("DATABASE_URL is not configured in env");
@@ -22,7 +22,7 @@ const MLM_TIERS = [
   { name: "Silver Leader", minSelfInvestment: 5000, minDirects: 4, minTeamVolume: 50000, unlockedLevels: 5 },
   { name: "Gold Leader", minSelfInvestment: 10000, minDirects: 6, minTeamVolume: 150000, unlockedLevels: 7 },
   { name: "Diamond Leader", minSelfInvestment: 25000, minDirects: 8, minTeamVolume: 500000, unlockedLevels: 9 },
-  { name: "Crown Leader", minSelfInvestment: 50000, minDirects: 10, minTeamVolume: 1000000, unlockedLevels: 10 }
+  { name: "Crown Leader", minSelfInvestment: 50000, minDirects: 10, minTeamVolume: 1000000, unlockedLevels: 10 },
 ];
 
 const MLM_LEVELS = [
@@ -35,7 +35,7 @@ const MLM_LEVELS = [
   { level: 7, bonus: 0.75, requiredRank: "Gold Leader" },
   { level: 8, bonus: 0.75, requiredRank: "Diamond Leader" },
   { level: 9, bonus: 0.5, requiredRank: "Diamond Leader" },
-  { level: 10, bonus: 0.5, requiredRank: "Crown Leader" }
+  { level: 10, bonus: 0.5, requiredRank: "Crown Leader" },
 ];
 
 const UTILITY_CATALOG = [
@@ -43,34 +43,59 @@ const UTILITY_CATALOG = [
     name: "Mobile Recharge",
     icon: "fa-mobile-screen",
     services: [
-      { name: "Aries Mobile", description: "Instant Aries network mobile talktime and data top-up", minAmount: 1, maxAmount: 500 },
-      { name: "Aries Talk", description: "Aries VOIP calling credits", minAmount: 5, maxAmount: 100 }
-    ]
+      {
+        name: "Aries Mobile",
+        description: "Instant Aries network mobile talktime and data top-up",
+        minAmount: 1,
+        maxAmount: 500,
+      },
+      { name: "Aries Talk", description: "Aries VOIP calling credits", minAmount: 5, maxAmount: 100 },
+    ],
   },
   {
     name: "Utility Bills",
     icon: "fa-bolt",
     services: [
       { name: "Aries Power", description: "Electricity utility invoice payment", minAmount: 10, maxAmount: 1000 },
-      { name: "Aries Gas", description: "Gas pipeline utility bill payment", minAmount: 10, maxAmount: 500 }
-    ]
+      { name: "Aries Gas", description: "Gas pipeline utility bill payment", minAmount: 10, maxAmount: 500 },
+    ],
   },
   {
     name: "Broadband & ISP",
     icon: "fa-wifi",
     services: [
-      { name: "Aries Fiber", description: "High-speed broadband monthly subscription renewal", minAmount: 20, maxAmount: 300 }
-    ]
+      {
+        name: "Aries Fiber",
+        description: "High-speed broadband monthly subscription renewal",
+        minAmount: 20,
+        maxAmount: 300,
+      },
+    ],
   },
   {
     name: "Vouchers & Gift Cards",
     icon: "fa-gift",
     services: [
-      { name: "Amazon Gift Card", description: "Universal digital gift card for Amazon marketplace shopping", minAmount: 10, maxAmount: 1000 },
-      { name: "Google Play Voucher", description: "Voucher for Android apps, games, and media store", minAmount: 10, maxAmount: 200 },
-      { name: "Apple Vouchers", description: "Apple Store and Apple Music digital voucher code", minAmount: 10, maxAmount: 500 }
-    ]
-  }
+      {
+        name: "Amazon Gift Card",
+        description: "Universal digital gift card for Amazon marketplace shopping",
+        minAmount: 10,
+        maxAmount: 1000,
+      },
+      {
+        name: "Google Play Voucher",
+        description: "Voucher for Android apps, games, and media store",
+        minAmount: 10,
+        maxAmount: 200,
+      },
+      {
+        name: "Apple Vouchers",
+        description: "Apple Store and Apple Music digital voucher code",
+        minAmount: 10,
+        maxAmount: 500,
+      },
+    ],
+  },
 ];
 
 async function main() {
@@ -82,7 +107,7 @@ async function main() {
     await prisma.mlmTier.upsert({
       where: { name: tier.name },
       update: tier,
-      create: tier
+      create: tier,
     });
   }
 
@@ -92,7 +117,7 @@ async function main() {
     await prisma.mlmLevel.upsert({
       where: { level: lvl.level },
       update: lvl,
-      create: lvl
+      create: lvl,
     });
   }
 
@@ -102,26 +127,26 @@ async function main() {
     const dbCat = await prisma.utilityCategory.upsert({
       where: { name: cat.name },
       update: { icon: cat.icon },
-      create: { name: cat.name, icon: cat.icon }
+      create: { name: cat.name, icon: cat.icon },
     });
 
     for (const svc of cat.services) {
       // Find service in this category or create
       const existing = await prisma.utilityService.findFirst({
-        where: { name: svc.name, categoryId: dbCat.id }
+        where: { name: svc.name, categoryId: dbCat.id },
       });
 
       if (existing) {
         await prisma.utilityService.update({
           where: { id: existing.id },
-          data: svc
+          data: svc,
         });
       } else {
         await prisma.utilityService.create({
           data: {
             categoryId: dbCat.id,
-            ...svc
-          }
+            ...svc,
+          },
         });
       }
     }

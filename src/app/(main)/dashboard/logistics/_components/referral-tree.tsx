@@ -1,22 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { useWeb3 } from "@/hooks/useWeb3";
+
 import { useSearchParams } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  ChevronRight,
-  ChevronDown,
-  Users,
-  User,
-  Loader2,
-  Copy,
-  Check,
-  Search,
-  GitBranch,
-} from "lucide-react";
+
+import { Check, ChevronDown, ChevronRight, Copy, GitBranch, Loader2, Search, User, Users } from "lucide-react";
 import { toast } from "sonner";
+
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useWeb3 } from "@/hooks/useWeb3";
 
 interface ReferralNode {
   walletAddress: string;
@@ -32,16 +25,76 @@ interface ReferralNode {
 }
 
 const LEVEL_COLORS = [
-  { border: "border-emerald-700/50", bg: "bg-emerald-950/20", text: "text-emerald-400", dot: "bg-emerald-500", line: "border-emerald-800/40" },
-  { border: "border-cyan-700/50", bg: "bg-cyan-950/20", text: "text-cyan-400", dot: "bg-cyan-500", line: "border-cyan-800/40" },
-  { border: "border-violet-700/50", bg: "bg-violet-950/20", text: "text-violet-400", dot: "bg-violet-500", line: "border-violet-800/40" },
-  { border: "border-amber-700/50", bg: "bg-amber-950/20", text: "text-amber-400", dot: "bg-amber-500", line: "border-amber-800/40" },
-  { border: "border-rose-700/50", bg: "bg-rose-950/20", text: "text-rose-400", dot: "bg-rose-500", line: "border-rose-800/40" },
-  { border: "border-sky-700/50", bg: "bg-sky-950/20", text: "text-sky-400", dot: "bg-sky-500", line: "border-sky-800/40" },
-  { border: "border-pink-700/50", bg: "bg-pink-950/20", text: "text-pink-400", dot: "bg-pink-500", line: "border-pink-800/40" },
-  { border: "border-teal-700/50", bg: "bg-teal-950/20", text: "text-teal-400", dot: "bg-teal-500", line: "border-teal-800/40" },
-  { border: "border-orange-700/50", bg: "bg-orange-950/20", text: "text-orange-400", dot: "bg-orange-500", line: "border-orange-800/40" },
-  { border: "border-indigo-700/50", bg: "bg-indigo-950/20", text: "text-indigo-400", dot: "bg-indigo-500", line: "border-indigo-800/40" },
+  {
+    border: "border-emerald-700/50",
+    bg: "bg-emerald-950/20",
+    text: "text-emerald-400",
+    dot: "bg-emerald-500",
+    line: "border-emerald-800/40",
+  },
+  {
+    border: "border-cyan-700/50",
+    bg: "bg-cyan-950/20",
+    text: "text-cyan-400",
+    dot: "bg-cyan-500",
+    line: "border-cyan-800/40",
+  },
+  {
+    border: "border-violet-700/50",
+    bg: "bg-violet-950/20",
+    text: "text-violet-400",
+    dot: "bg-violet-500",
+    line: "border-violet-800/40",
+  },
+  {
+    border: "border-amber-700/50",
+    bg: "bg-amber-950/20",
+    text: "text-amber-400",
+    dot: "bg-amber-500",
+    line: "border-amber-800/40",
+  },
+  {
+    border: "border-rose-700/50",
+    bg: "bg-rose-950/20",
+    text: "text-rose-400",
+    dot: "bg-rose-500",
+    line: "border-rose-800/40",
+  },
+  {
+    border: "border-sky-700/50",
+    bg: "bg-sky-950/20",
+    text: "text-sky-400",
+    dot: "bg-sky-500",
+    line: "border-sky-800/40",
+  },
+  {
+    border: "border-pink-700/50",
+    bg: "bg-pink-950/20",
+    text: "text-pink-400",
+    dot: "bg-pink-500",
+    line: "border-pink-800/40",
+  },
+  {
+    border: "border-teal-700/50",
+    bg: "bg-teal-950/20",
+    text: "text-teal-400",
+    dot: "bg-teal-500",
+    line: "border-teal-800/40",
+  },
+  {
+    border: "border-orange-700/50",
+    bg: "bg-orange-950/20",
+    text: "text-orange-400",
+    dot: "bg-orange-500",
+    line: "border-orange-800/40",
+  },
+  {
+    border: "border-indigo-700/50",
+    bg: "bg-indigo-950/20",
+    text: "text-indigo-400",
+    dot: "bg-indigo-500",
+    line: "border-indigo-800/40",
+  },
 ];
 
 function buildTree(flatReferrals: any[], rootAddress: string): ReferralNode[] {
@@ -178,9 +231,7 @@ function TreeNode({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-white truncate">{node.name}</span>
-              <Badge
-                className={`text-[9px] px-1.5 py-0 ${color.bg} ${color.text} border ${color.border}`}
-              >
+              <Badge className={`text-[9px] px-1.5 py-0 ${color.bg} ${color.text} border ${color.border}`}>
                 L{node.level}
               </Badge>
               {node.rank && node.rank !== "Default" && (
@@ -327,9 +378,7 @@ export function ReferralTree() {
         <CardContent className="flex flex-col items-center justify-center py-12 text-center">
           <Users className="w-12 h-12 text-zinc-700 mb-3" />
           <p className="text-sm text-zinc-500">No referrals yet.</p>
-          <p className="text-xs text-zinc-600 mt-1">
-            Share your referral link to start building your downline tree.
-          </p>
+          <p className="text-xs text-zinc-600 mt-1">Share your referral link to start building your downline tree.</p>
         </CardContent>
       </Card>
     );

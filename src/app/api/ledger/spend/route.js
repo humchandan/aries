@@ -1,10 +1,10 @@
-import { prisma } from '@/lib/prisma';
-import { verifyToken } from '@/lib/auth';
+import { verifyToken } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(request) {
   const walletAddress = verifyToken(request);
   if (!walletAddress) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -13,63 +13,62 @@ export async function POST(request) {
     const sId = parseInt(serviceId) || 0;
 
     if (spendAmount <= 0) {
-      return Response.json({ error: 'Invalid spend amount' }, { status: 400 });
+      return Response.json({ error: "Invalid spend amount" }, { status: 400 });
     }
 
     // 1. Fetch service details
     const service = await prisma.utilityService.findUnique({
       where: { id: sId },
-      include: { category: true }
+      include: { category: true },
     });
 
     if (!service || !service.isActive || !service.category.isActive) {
-      return Response.json({ error: 'Selected utility service is currently unavailable' }, { status: 404 });
+      return Response.json({ error: "Selected utility service is currently unavailable" }, { status: 404 });
     }
 
     if (spendAmount < Number(service.minAmount) || spendAmount > Number(service.maxAmount)) {
-      return Response.json({
-        error: `Spend amount must be between ${Number(service.minAmount)} and ${Number(service.maxAmount)} ARES`
-      }, { status: 400 });
+      return Response.json(
+        {
+          error: `Spend amount must be between ${Number(service.minAmount)} and ${Number(service.maxAmount)} ARES`,
+        },
+        { status: 400 },
+      );
     }
 
     // 2. Calculate user balance dynamically
     const entries = await prisma.ledgerEntry.findMany({
-      where: { userAddress: walletAddress }
+      where: { userAddress: walletAddress },
     });
 
     let currentBalance = 0;
-    entries.forEach(entry => {
+    entries.forEach((entry) => {
       const amt = Number(entry.amount);
       const net = Number(entry.netAmount);
-      
+
       if (
-        entry.type === 'DEPOSIT' || 
-        entry.type === 'TRANSFER_IN' || 
-        entry.type === 'CLAIM_DIRECT' ||
-        entry.type === 'CLAIM_METAMASK_SPLIT' ||
-        entry.type === 'NETWORK_REDEEM' ||
-        entry.type === 'SPEND_REFUND'
+        entry.type === "DEPOSIT" ||
+        entry.type === "TRANSFER_IN" ||
+        entry.type === "CLAIM_DIRECT" ||
+        entry.type === "CLAIM_METAMASK_SPLIT" ||
+        entry.type === "NETWORK_REDEEM" ||
+        entry.type === "SPEND_REFUND"
       ) {
         currentBalance += net;
-      } else if (
-        entry.type === 'SPEND' ||
-        entry.type === 'SPEND_PENDING' ||
-        entry.type === 'TRANSFER_OUT'
-      ) {
+      } else if (entry.type === "SPEND" || entry.type === "SPEND_PENDING" || entry.type === "TRANSFER_OUT") {
         currentBalance -= amt;
       }
     });
 
     if (currentBalance < spendAmount) {
-      return Response.json({ error: 'Insufficient utility credit balance' }, { status: 400 });
+      return Response.json({ error: "Insufficient utility credit balance" }, { status: 400 });
     }
 
     // 3. Create Utility Request and record PENDING debit inside a db transaction
-    const detailsString = typeof details === 'string' ? details : JSON.stringify(details || {});
-    
+    const detailsString = typeof details === "string" ? details : JSON.stringify(details || {});
+
     // Format a nice details summary description
-    let summaryDesc = '';
-    if (details && typeof details === 'object') {
+    let summaryDesc = "";
+    if (details && typeof details === "object") {
       const parts = [];
       if (details.phoneNo) parts.push(`Phone: ${details.phoneNo}`);
       if (details.operator) parts.push(`Operator: ${details.operator}`);
@@ -79,7 +78,7 @@ export async function POST(request) {
       if (details.internetIsp) parts.push(`ISP: ${details.internetIsp}`);
       if (details.voucherBrand) parts.push(`Brand: ${details.voucherBrand}`);
       if (details.recipientEmail) parts.push(`Email: ${details.recipientEmail}`);
-      summaryDesc = parts.join(', ');
+      summaryDesc = parts.join(", ");
     }
     if (!summaryDesc) {
       summaryDesc = detailsString.substring(0, 50);
@@ -94,20 +93,20 @@ export async function POST(request) {
           categoryName: service.category.name,
           details: detailsString,
           amount: spendAmount,
-          status: 'PENDING'
-        }
+          status: "PENDING",
+        },
       });
 
       const entry = await tx.ledgerEntry.create({
         data: {
           userAddress: walletAddress,
-          type: 'SPEND_PENDING',
+          type: "SPEND_PENDING",
           amount: spendAmount,
           netAmount: spendAmount,
           fee: 0,
           description: `Pending: ${service.name} (${summaryDesc}) - Req #${req.id}`,
-          timestamp: new Date()
-        }
+          timestamp: new Date(),
+        },
       });
 
       return { req, entry };
@@ -122,11 +121,11 @@ export async function POST(request) {
         categoryName: service.category.name,
         amount: Number(result.req.amount),
         status: result.req.status,
-        timestamp: result.req.timestamp
-      }
+        timestamp: result.req.timestamp,
+      },
     });
   } catch (err) {
     console.error("Failed to process utility spend request:", err);
-    return Response.json({ error: 'Internal server error' }, { status: 500 });
+    return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

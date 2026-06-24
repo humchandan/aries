@@ -13,8 +13,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
-import { getInitials } from "@/lib/utils";
 import { useWeb3 } from "@/hooks/useWeb3";
+import { getInitials } from "@/lib/utils";
 
 export function NavUser({
   user,
@@ -34,7 +34,7 @@ export function NavUser({
     }
   };
 
-  const displayAddress = walletAddress 
+  const displayAddress = walletAddress
     ? `${walletAddress.substring(0, 6)}...${walletAddress.substring(walletAddress.length - 4)}`
     : "Not Connected";
 
@@ -82,7 +82,11 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={disconnect} disabled={!walletAddress} className="text-red-500 focus:text-red-500">
+            <DropdownMenuItem
+              onClick={disconnect}
+              disabled={!walletAddress}
+              className="text-red-500 focus:text-red-500"
+            >
               <LogOut className="mr-2 h-4 w-4" />
               Disconnect Wallet
             </DropdownMenuItem>

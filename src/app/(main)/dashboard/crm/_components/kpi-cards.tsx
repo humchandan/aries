@@ -2,115 +2,131 @@ import { ArrowUpRight, TrendingDown, TrendingUp } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
+import { prisma } from "@/lib/prisma";
 
-export function KpiCards() {
+export async function KpiCards() {
+  const ignoredWallets = ["0xd01c1bfc96e22a9470c186e69e0a97e18eff23e6", "0x6f8f3ccd90d63d24ed54270c03803cf12dbb6a32"];
+
+  // 1. Total Staking Done
+  const totalStakingQuery = await prisma.stakingPlan.aggregate({
+    _sum: { amount: true },
+    where: { userAddress: { notIn: ignoredWallets } },
+  });
+  const totalStaking = Number(totalStakingQuery._sum.amount || 0);
+
+  // 2. Withdrawals made on Metamask
+  const metamaskQuery = await prisma.claimHistory.aggregate({
+    _sum: { grossAmount: true },
+    where: {
+      destination: { in: ["METAMASK_50_50", "metamask", "METAMASK"] },
+      userAddress: { notIn: ignoredWallets },
+    },
+  });
+  const metamaskWithdrawals = Number(metamaskQuery._sum.grossAmount || 0);
+
+  // 3. Withdrawals to Utility Portal Wallet
+  const utilityQuery = await prisma.claimHistory.aggregate({
+    _sum: { grossAmount: true },
+    where: {
+      destination: { in: ["UTILITY", "utility"] },
+      userAddress: { notIn: ignoredWallets },
+    },
+  });
+  const utilityWithdrawals = Number(utilityQuery._sum.grossAmount || 0);
+
+  // 4. Lead-to-Deal Rate (Total % of Active users vs Total Signed Up Users)
+  const totalUsers = await prisma.user.count({
+    where: { walletAddress: { notIn: ignoredWallets } },
+  });
+  const activeUsersData = await prisma.stakingPlan.findMany({
+    where: {
+      userAddress: { notIn: ignoredWallets },
+    },
+    select: { userAddress: true },
+    distinct: ["userAddress"],
+  });
+  const activeUsers = activeUsersData.length;
+  const activePercent = totalUsers > 0 ? ((activeUsers / totalUsers) * 100).toFixed(1) : "0.0";
+
   return (
     <section className="space-y-5">
       <div className="space-y-1">
-        <h2 className="text-3xl tracking-tight">Pipeline Overview</h2>
+        <h2 className="text-3xl tracking-tight">System KPI Overview</h2>
         <p className="text-muted-foreground text-sm">
-          Keep tabs on lead quality, open opportunities, and conversion rates across the current sales cycle.
+          Keep tabs on total network volume, claim history, and user activation rates.
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {/* Total Staking */}
         <Card>
           <CardHeader>
-            <CardDescription>Lead Pipeline Value</CardDescription>
+            <CardDescription>Total Staking Volume</CardDescription>
             <CardAction>
               <ArrowUpRight className="size-4" />
             </CardAction>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex items-center gap-3">
-              <span className="text-3xl leading-none tracking-tight">$284,500</span>
-
-              <Badge
-                variant="outline"
-                className="border-green-200 bg-green-500/10 text-green-700 dark:border-green-900/40 dark:bg-green-500/15 dark:text-green-300"
-              >
-                <TrendingUp />
-                +12%
-              </Badge>
+              <span className="text-3xl leading-none tracking-tight">{totalStaking.toLocaleString()} ARES</span>
             </div>
             <p className="text-sm">
-              <span className="font-medium text-foreground">$254,200</span>{" "}
-              <span className="text-muted-foreground">last month</span>
+              <span className="text-muted-foreground">all-time deposits</span>
             </p>
           </CardContent>
         </Card>
 
+        {/* Metamask Withdrawals */}
         <Card>
           <CardHeader>
-            <CardDescription>Qualified Lead Rate</CardDescription>
+            <CardDescription>Metamask Withdrawals</CardDescription>
             <CardAction>
               <ArrowUpRight className="size-4" />
             </CardAction>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex items-center gap-3">
-              <span className="text-3xl leading-none tracking-tight">28.4%</span>
-
-              <Badge variant="outline" className="border-destructive/20 bg-destructive/10 text-destructive">
-                <TrendingDown />
-                -2.5%
-              </Badge>
+              <span className="text-3xl leading-none tracking-tight">{metamaskWithdrawals.toLocaleString()} ARES</span>
             </div>
             <p className="text-sm">
-              <span className="font-medium text-foreground">30.9%</span>{" "}
-              <span className="text-muted-foreground">last month</span>
+              <span className="text-muted-foreground">all-time 50/50 splits</span>
             </p>
           </CardContent>
         </Card>
 
+        {/* Utility Portal Withdrawals */}
         <Card>
           <CardHeader>
-            <CardDescription>Open Opportunities</CardDescription>
+            <CardDescription>Utility Portal Claims</CardDescription>
             <CardAction>
               <ArrowUpRight className="size-4" />
             </CardAction>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex items-center gap-3">
-              <span className="text-3xl leading-none tracking-tight">42</span>
-
-              <Badge
-                variant="outline"
-                className="border-green-200 bg-green-500/10 text-green-700 dark:border-green-900/40 dark:bg-green-500/15 dark:text-green-300"
-              >
-                <TrendingUp />
-                +7
-              </Badge>
+              <span className="text-3xl leading-none tracking-tight">{utilityWithdrawals.toLocaleString()} ARES</span>
             </div>
             <p className="text-sm">
-              <span className="font-medium text-foreground">35</span>{" "}
-              <span className="text-muted-foreground">last month</span>
+              <span className="text-muted-foreground">all-time internal transfers</span>
             </p>
           </CardContent>
         </Card>
 
+        {/* User Activation Rate */}
         <Card>
           <CardHeader>
-            <CardDescription>Lead-to-Deal Rate</CardDescription>
+            <CardDescription>User Activation Rate</CardDescription>
             <CardAction>
               <ArrowUpRight className="size-4" />
             </CardAction>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex items-center gap-3">
-              <span className="text-3xl leading-none tracking-tight">18.1%</span>
-
-              <Badge
-                variant="outline"
-                className="border-green-200 bg-green-500/10 text-green-700 dark:border-green-900/40 dark:bg-green-500/15 dark:text-green-300"
-              >
-                <TrendingUp />
-                +1.6%
-              </Badge>
+              <span className="text-3xl leading-none tracking-tight">{activePercent}%</span>
             </div>
             <p className="text-sm">
-              <span className="font-medium text-foreground">16.5%</span>{" "}
-              <span className="text-muted-foreground">last month</span>
+              <span className="font-medium text-foreground">{activeUsers} active</span>{" "}
+              <span className="text-muted-foreground">/ {totalUsers} total users</span>
             </p>
           </CardContent>
         </Card>

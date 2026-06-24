@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { Loader2 } from "lucide-react";
-import { Referrals } from "./referrals";
+
 import { useWeb3 } from "@/hooks/useWeb3";
+
+import { Referrals } from "./referrals";
 
 export function ReferralsPage() {
   const { jwtToken, isAdmin } = useWeb3();
@@ -13,20 +16,20 @@ export function ReferralsPage() {
 
   useEffect(() => {
     if (!jwtToken) return;
-    
+
     const fetchData = async () => {
       try {
         const referralEndpoint = isAdmin ? "/api/admin/referrals" : "/api/user/referrals";
         const [refRes, configRes] = await Promise.all([
           fetch(referralEndpoint, { headers: { Authorization: `Bearer ${jwtToken}` } }),
-          fetch("/api/user/mlm/config", { headers: { Authorization: `Bearer ${jwtToken}` } })
+          fetch("/api/user/mlm/config", { headers: { Authorization: `Bearer ${jwtToken}` } }),
         ]);
 
         if (refRes.ok) {
           const data = await refRes.json();
           setReferrals(data.referrals || []);
         }
-        
+
         if (configRes.ok) {
           const configData = await configRes.json();
           setMlmTiers(configData.tiers || []);

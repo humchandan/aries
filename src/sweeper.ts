@@ -1,22 +1,23 @@
-import { ethers } from 'ethers';
-import { prisma } from './lib/prisma';
-import fs from 'fs';
-import path from 'path';
-import { accrueUserYield } from './lib/yield';
+import { ethers } from "ethers";
+import fs from "fs";
+import path from "path";
+
+import { prisma } from "./lib/prisma";
+import { accrueUserYield } from "./lib/yield";
 
 // Native env loader for modern Node.js
 try {
-  const envPath = path.join(process.cwd(), '.env');
+  const envPath = path.join(process.cwd(), ".env");
   if (fs.existsSync(envPath)) {
     (process as any).loadEnvFile(envPath);
     console.log(`[Sweeper] Loaded environment variables from ${envPath}`);
   }
 } catch (e) {
-  console.log('[Sweeper] Environment file already loaded or native loadEnvFile not supported.');
+  console.log("[Sweeper] Environment file already loaded or native loadEnvFile not supported.");
 }
 
-const RPC_URL = process.env.NEXT_PUBLIC_ARIES_RPC_URL || 'https://rpc.arieschain.org';
-const LAST_BLOCK_FILE = path.join(process.cwd(), 'data/last_block.txt');
+const RPC_URL = process.env.NEXT_PUBLIC_ARIES_RPC_URL || "https://rpc.arieschain.org";
+const LAST_BLOCK_FILE = path.join(process.cwd(), "data/last_block.txt");
 
 // Ensure data folder exists
 if (!fs.existsSync(path.dirname(LAST_BLOCK_FILE))) {
@@ -34,7 +35,7 @@ function connectProvider() {
 async function loadLastBlock() {
   if (fs.existsSync(LAST_BLOCK_FILE)) {
     try {
-      const data = fs.readFileSync(LAST_BLOCK_FILE, 'utf8').trim();
+      const data = fs.readFileSync(LAST_BLOCK_FILE, "utf8").trim();
       lastProcessedBlock = parseInt(data) || 0;
       console.log(`[Sweeper] Loaded last processed block from file: ${lastProcessedBlock}`);
       return;
@@ -42,7 +43,7 @@ async function loadLastBlock() {
       console.error(`[Sweeper] Failed to read last block file:`, e);
     }
   }
-  
+
   // Fallback: Get current block from blockchain
   try {
     if (provider) {
@@ -59,7 +60,7 @@ async function loadLastBlock() {
 
 function saveLastBlock(blockNumber: number) {
   try {
-    fs.writeFileSync(LAST_BLOCK_FILE, blockNumber.toString(), 'utf8');
+    fs.writeFileSync(LAST_BLOCK_FILE, blockNumber.toString(), "utf8");
   } catch (e) {
     console.error(`[Sweeper] Failed to write last block file:`, e);
   }
@@ -77,21 +78,21 @@ async function creditDeposit(userAddress: string, amount: string, txHash: string
   try {
     await prisma.$transaction(async (tx) => {
       const existing = await tx.ledgerEntry.findFirst({
-        where: { txHash }
+        where: { txHash },
       });
       if (existing) return;
-      
+
       await tx.ledgerEntry.create({
         data: {
           userAddress: userAddress.toLowerCase(),
-          type: 'DEPOSIT',
+          type: "DEPOSIT",
           amount: parseFloat(amount),
           netAmount: parseFloat(amount),
           fee: 0,
           description: `Direct Deposit to Proxy Wallet (${proxyAddress})`,
           txHash,
-          timestamp: new Date()
-        }
+          timestamp: new Date(),
+        },
       });
       console.log(`[Sweeper] Credited deposit of ${amount} ARES to ${userAddress}`);
     });
@@ -104,21 +105,21 @@ async function creditExternalDeposit(fromAddress: string, amount: string, txHash
   try {
     await prisma.$transaction(async (tx) => {
       const existing = await tx.ledgerEntry.findFirst({
-        where: { txHash }
+        where: { txHash },
       });
       if (existing) return;
-      
+
       await tx.ledgerEntry.create({
         data: {
           userAddress: fromAddress.toLowerCase(),
-          type: 'DEPOSIT',
+          type: "DEPOSIT",
           amount: parseFloat(amount),
           netAmount: parseFloat(amount),
           fee: 0,
           description: `Direct Native Deposit to Utility Wallet`,
           txHash,
-          timestamp: new Date()
-        }
+          timestamp: new Date(),
+        },
       });
       console.log(`[Sweeper] Credited external native deposit of ${amount} ARES to ${fromAddress}`);
     });
@@ -131,10 +132,10 @@ async function recordPlan(userAddress: string, amount: string, txHash: string, t
   try {
     await prisma.$transaction(async (tx) => {
       const existing = await tx.stakingPlan.findUnique({
-        where: { txHash }
+        where: { txHash },
       });
       if (existing) return;
-      
+
       // Before recording the plan, accrue yield for user up to this timestamp
       await accrueUserYield(userAddress);
 
@@ -143,8 +144,8 @@ async function recordPlan(userAddress: string, amount: string, txHash: string, t
           userAddress: userAddress.toLowerCase(),
           amount: parseFloat(amount),
           txHash,
-          timestamp: new Date(timestamp * 1000)
-        }
+          timestamp: new Date(timestamp * 1000),
+        },
       });
       console.log(`[Sweeper] Recorded staking plan of ${amount} ARES for ${userAddress}`);
     });
@@ -160,26 +161,26 @@ async function recordSplitClaim(userAddress: string, grossAmount: string, netAmo
         where: {
           userAddress: userAddress.toLowerCase(),
           grossAmount: parseFloat(grossAmount),
-          destination: 'METAMASK',
+          destination: "METAMASK",
           timestamp: {
-            gte: new Date(Date.now() - 60000)
-          }
-        }
+            gte: new Date(Date.now() - 60000),
+          },
+        },
       });
       if (existing) return;
-      
+
       // Accrue yield before updating the database claim state
       await accrueUserYield(userAddress);
 
       // Deduct claimed amount from yieldBalance
       const user = await tx.user.findUnique({
-        where: { walletAddress: userAddress.toLowerCase() }
+        where: { walletAddress: userAddress.toLowerCase() },
       });
       if (user) {
         const nextYieldBalance = Math.max(0, Number(user.yieldBalance) - parseFloat(grossAmount));
         await tx.user.update({
           where: { walletAddress: userAddress.toLowerCase() },
-          data: { yieldBalance: nextYieldBalance }
+          data: { yieldBalance: nextYieldBalance },
         });
       }
 
@@ -188,9 +189,9 @@ async function recordSplitClaim(userAddress: string, grossAmount: string, netAmo
           userAddress: userAddress.toLowerCase(),
           grossAmount: parseFloat(grossAmount),
           netAmount: parseFloat(netAmount),
-          destination: 'METAMASK',
-          timestamp: new Date()
-        }
+          destination: "METAMASK",
+          timestamp: new Date(),
+        },
       });
       console.log(`[Sweeper] Recorded MetaMask split claim of ${grossAmount} ARES for ${userAddress}`);
     });
@@ -204,61 +205,64 @@ async function pollBlockRange() {
   try {
     const currentBlock = await provider.getBlockNumber();
     if (currentBlock <= lastProcessedBlock) return;
-    
+
     const startBlock = lastProcessedBlock + 1;
     const endBlock = Math.min(currentBlock, lastProcessedBlock + 20);
-    
+
     console.log(`[Sweeper] Scanning blocks #${startBlock} to #${endBlock} for transactions and logs...`);
-    
+
     for (let b = startBlock; b <= endBlock; b++) {
       try {
         const block = await provider.getBlock(b, true);
         if (block && block.prefetchedTransactions) {
           for (const tx of block.prefetchedTransactions) {
             const txHash = tx.hash;
-            
+
             // 1. Scan for direct transfers to the utility wallet EOA
             if (tx.to && tx.to.toLowerCase() === UTILITY_WALLET && tx.value > BigInt(0)) {
               const amountAres = ethers.formatEther(tx.value);
               const fromAddress = tx.from.toLowerCase();
-              
-              console.log(`[Sweeper] Detected external native deposit of ${amountAres} ARES to utility wallet from ${fromAddress}`);
+
+              console.log(
+                `[Sweeper] Detected external native deposit of ${amountAres} ARES to utility wallet from ${fromAddress}`,
+              );
               await creditExternalDeposit(fromAddress, amountAres, txHash);
             }
-            
+
             // 2. Fetch receipts to check for events
             const receipt = await provider.getTransactionReceipt(txHash);
             if (receipt && receipt.status === 1 && receipt.logs) {
               for (const log of receipt.logs) {
                 const topic = log.topics[0];
-                
+
                 if (topic === RECEIVED_TOPIC) {
                   const proxyAddress = log.address.toLowerCase();
                   const amountWei = ethers.getBigInt(log.data);
                   const amountAres = ethers.formatEther(amountWei);
-                  
+
                   const user = await prisma.user.findFirst({
-                    where: { proxyAddress }
+                    where: { proxyAddress },
                   });
-                  
+
                   if (user) {
                     await creditDeposit(user.walletAddress, amountAres, txHash, log.address);
                   }
-                } 
-                else if (topic === PLAN_PURCHASED_TOPIC) {
-                  const userAddress = ethers.getAddress('0x' + log.topics[1].substring(26)).toLowerCase();
-                  const decoded = ethers.AbiCoder.defaultAbiCoder().decode(['uint256', 'uint256'], log.data);
+                } else if (topic === PLAN_PURCHASED_TOPIC) {
+                  const userAddress = ethers.getAddress("0x" + log.topics[1].substring(26)).toLowerCase();
+                  const decoded = ethers.AbiCoder.defaultAbiCoder().decode(["uint256", "uint256"], log.data);
                   const amountAres = ethers.formatEther(decoded[0]);
                   const timestamp = Number(decoded[1]);
-                  
+
                   await recordPlan(userAddress, amountAres, txHash, timestamp);
-                } 
-                else if (topic === REWARDS_CLAIMED_TOPIC) {
-                  const userAddress = ethers.getAddress('0x' + log.topics[1].substring(26)).toLowerCase();
-                  const decoded = ethers.AbiCoder.defaultAbiCoder().decode(['uint256', 'uint256', 'uint256', 'uint256'], log.data);
+                } else if (topic === REWARDS_CLAIMED_TOPIC) {
+                  const userAddress = ethers.getAddress("0x" + log.topics[1].substring(26)).toLowerCase();
+                  const decoded = ethers.AbiCoder.defaultAbiCoder().decode(
+                    ["uint256", "uint256", "uint256", "uint256"],
+                    log.data,
+                  );
                   const grossAres = ethers.formatEther(decoded[0]);
                   const netAres = ethers.formatEther(decoded[0] - decoded[1]);
-                  
+
                   await recordSplitClaim(userAddress, grossAres, netAres, txHash);
                 }
               }
@@ -269,7 +273,7 @@ async function pollBlockRange() {
         console.error(`[Sweeper] Error scanning block #${b}:`, blockErr);
       }
     }
-    
+
     lastProcessedBlock = endBlock;
     saveLastBlock(endBlock);
   } catch (err) {
@@ -279,28 +283,30 @@ async function pollBlockRange() {
 
 // Yield accrual daemon loops through all users and updates their yield state
 async function accrueYieldForAllUsers() {
-  console.log('[Sweeper] Accruing yield for all users...');
+  console.log("[Sweeper] Accruing yield for all users...");
   try {
     const users = await prisma.user.findMany();
     for (const user of users) {
       try {
         const result = await accrueUserYield(user.walletAddress);
         if (result && result.accruedThisPeriod > 0) {
-          console.log(`[Sweeper] Accrued +${result.accruedThisPeriod.toFixed(6)} ARES yield for ${user.walletAddress}. Total: ${result.yieldBalance.toFixed(6)}`);
+          console.log(
+            `[Sweeper] Accrued +${result.accruedThisPeriod.toFixed(6)} ARES yield for ${user.walletAddress}. Total: ${result.yieldBalance.toFixed(6)}`,
+          );
         }
       } catch (err) {
         console.error(`[Sweeper] Failed to accrue yield for user ${user.walletAddress}:`, err);
       }
     }
   } catch (err) {
-    console.error('[Sweeper] Failed to fetch users for yield accrual:', err);
+    console.error("[Sweeper] Failed to fetch users for yield accrual:", err);
   }
 }
 
 async function main() {
   connectProvider();
   await loadLastBlock();
-  
+
   console.log(`[Sweeper] Direct DB Poller started successfully.`);
   // Poll blockchain blocks every 5 seconds
   setInterval(pollBlockRange, 5000);
@@ -309,7 +315,7 @@ async function main() {
   setInterval(accrueYieldForAllUsers, 60000);
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error(`[Sweeper] Startup failure:`, err);
   process.exit(1);
 });

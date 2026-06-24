@@ -27,7 +27,7 @@ import { filters } from "./data";
 import { referralsColumns } from "./referrals-columns";
 import { ReferralsTable } from "./referrals-table";
 
-export function Referrals({ referrals, mlmTiers }: { referrals: any[], mlmTiers: any[] }) {
+export function Referrals({ referrals, mlmTiers }: { referrals: any[]; mlmTiers: any[] }) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [sorting, setSorting] = React.useState<SortingState>([{ id: "joinedDate", desc: true }]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -109,7 +109,6 @@ export function Referrals({ referrals, mlmTiers }: { referrals: any[], mlmTiers:
         </CardAction>
       </CardHeader>
       <CardContent className="flex flex-col gap-4 px-0">
-
         <div className="flex items-center justify-between gap-3 px-4">
           <div className="text-muted-foreground text-sm tabular-nums">{selectedCount} selected</div>
 

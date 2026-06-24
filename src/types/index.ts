@@ -13,4 +13,3 @@ export interface NavGroup {
   title: string;
   items: NavItem[];
 }
-

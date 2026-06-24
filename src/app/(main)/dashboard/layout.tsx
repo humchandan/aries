@@ -15,11 +15,11 @@ import { SIDEBAR_COLLAPSIBLE_VALUES, SIDEBAR_VARIANT_VALUES } from "@/lib/prefer
 import { cn } from "@/lib/utils";
 import { getPreference } from "@/server/server-actions";
 
+import { BanBanner } from "./_components/ban-banner";
 import { AccountSwitcher } from "./_components/sidebar/account-switcher";
 import { LayoutControls } from "./_components/sidebar/layout-controls";
 import { SearchDialog } from "./_components/sidebar/search-dialog";
 import { ThemeSwitcher } from "./_components/sidebar/theme-switcher";
-import { BanBanner } from "./_components/ban-banner";
 
 export default async function Layout({ children }: Readonly<{ children: ReactNode }>) {
   const cookieStore = await cookies();

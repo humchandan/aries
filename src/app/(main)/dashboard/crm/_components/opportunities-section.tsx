@@ -13,7 +13,7 @@ import {
   useReactTable,
   type VisibilityState,
 } from "@tanstack/react-table";
-import { ChevronDownIcon, ListFilter } from "lucide-react";
+import { ChevronDownIcon, ListFilter, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,20 +35,42 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useWeb3 } from "@/hooks/useWeb3";
 
-import { opportunitiesColumns } from "./opportunities-table/columns";
-import opportunitiesData from "./opportunities-table/data.json";
-import { opportunitiesSchema } from "./opportunities-table/schema";
+import { opportunitiesColumns, type StakerRow } from "./opportunities-table/columns";
 
-const stageOptions = ["all", "Proposal Sent", "Discovery", "Negotiation", "Qualified"] as const;
-const healthOptions = ["all", "On Track", "Needs Review", "At Risk", "On Hold"] as const;
-const opportunities = opportunitiesSchema.parse(opportunitiesData);
+const rankOptions = ["all", "Default", "Bronze", "Silver", "Gold", "Platinum", "Diamond"] as const;
 
 function preventPaginationNavigation(event: React.MouseEvent<HTMLAnchorElement>) {
   event.preventDefault();
 }
 
 export function OpportunitiesSection() {
+  const { jwtToken, isAdmin } = useWeb3();
+  const [data, setData] = React.useState<StakerRow[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    async function fetchData() {
+      if (!jwtToken || !isAdmin) return;
+      try {
+        setLoading(true);
+        const res = await fetch("/api/admin/active-stakers", {
+          headers: { Authorization: `Bearer ${jwtToken}` },
+        });
+        const json = await res.json();
+        if (json.success) {
+          setData(json.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch active stakers", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, [jwtToken, isAdmin]);
+
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility] = React.useState<VisibilityState>({});
@@ -59,7 +81,7 @@ export function OpportunitiesSection() {
   });
 
   const table = useReactTable({
-    data: opportunities,
+    data,
     columns: opportunitiesColumns,
     state: {
       rowSelection,
@@ -68,7 +90,7 @@ export function OpportunitiesSection() {
       globalFilter,
       pagination,
     },
-    getRowId: (row) => row.id,
+    getRowId: (row) => row.id.toString(),
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onColumnFiltersChange: setColumnFilters,
@@ -80,8 +102,7 @@ export function OpportunitiesSection() {
     globalFilterFn: "includesString",
   });
   const searchQuery = table.getState().globalFilter ?? "";
-  const stageFilter = (table.getColumn("stage")?.getFilterValue() as string) ?? "all";
-  const healthFilter = (table.getColumn("health")?.getFilterValue() as string) ?? "all";
+  const rankFilter = (table.getColumn("rank")?.getFilterValue() as string) ?? "all";
   const currentPage = table.getState().pagination.pageIndex + 1;
   const pageCount = table.getPageCount();
   const filteredOpportunityCount = table.getFilteredRowModel().rows.length;
@@ -101,15 +122,15 @@ export function OpportunitiesSection() {
     <section>
       <Card>
         <CardHeader>
-          <CardTitle className="leading-none">Recent Opportunities</CardTitle>
+          <CardTitle className="leading-none">Active System Stakers</CardTitle>
           <CardDescription>
-            Track qualified leads moving through discovery, proposal, and closing stages.
+            Details of all users actively staking into the system and their network metrics.
           </CardDescription>
           <CardAction>
             <div className="flex items-center gap-2">
               <Input
                 className="h-7 w-44 md:w-52"
-                placeholder="Search deals..."
+                placeholder="Search users..."
                 value={searchQuery}
                 onChange={(event) => {
                   table.setGlobalFilter(event.target.value || undefined);
@@ -120,45 +141,21 @@ export function OpportunitiesSection() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm">
                     <ListFilter data-icon="inline-start" />
-                    Stage
+                    Rank
                     <ChevronDownIcon data-icon="inline-end" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-40">
                   <DropdownMenuRadioGroup
-                    value={stageFilter}
+                    value={rankFilter}
                     onValueChange={(value) => {
-                      table.getColumn("stage")?.setFilterValue(value === "all" ? undefined : value);
+                      table.getColumn("rank")?.setFilterValue(value === "all" ? undefined : value);
                       table.setPageIndex(0);
                     }}
                   >
-                    {stageOptions.map((option) => (
+                    {rankOptions.map((option) => (
                       <DropdownMenuRadioItem key={option} value={option}>
-                        {option === "all" ? "All stages" : option}
-                      </DropdownMenuRadioItem>
-                    ))}
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <ListFilter data-icon="inline-start" />
-                    Health
-                    <ChevronDownIcon data-icon="inline-end" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-40">
-                  <DropdownMenuRadioGroup
-                    value={healthFilter}
-                    onValueChange={(value) => {
-                      table.getColumn("health")?.setFilterValue(value === "all" ? undefined : value);
-                      table.setPageIndex(0);
-                    }}
-                  >
-                    {healthOptions.map((option) => (
-                      <DropdownMenuRadioItem key={option} value={option}>
-                        {option === "all" ? "All health" : option}
+                        {option === "all" ? "All ranks" : option}
                       </DropdownMenuRadioItem>
                     ))}
                   </DropdownMenuRadioGroup>
