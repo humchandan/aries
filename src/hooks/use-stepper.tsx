@@ -1,6 +1,7 @@
-import type { AnyFormApi } from '@tanstack/react-form';
-import { useCallback, useState } from 'react';
-import type { ZodTypeAny } from 'zod';
+import { useCallback, useState } from "react";
+
+import type { AnyFormApi } from "@tanstack/react-form";
+import type { ZodTypeAny } from "zod";
 
 /**
  * Options for handling cancel/back actions
@@ -44,7 +45,7 @@ export function useFormStepper(schemas: ZodTypeAny[]) {
     count: stepCount,
     goToNextStep,
     goToPrevStep,
-    isCompleted: currentStep === stepCount
+    isCompleted: currentStep === stepCount,
   };
 
   const currentValidator = schemas[currentStep - 1]; // Convert to 0-based for array access
@@ -95,6 +96,6 @@ export function useFormStepper(schemas: ZodTypeAny[]) {
     currentValidator, // Zod schema for current step
     triggerFormGroup, // Validate current step fields
     handleNextStepOrSubmit, // Handle next/submit action
-    handleCancelOrBack // Handle back/cancel action
+    handleCancelOrBack, // Handle back/cancel action
   };
 }

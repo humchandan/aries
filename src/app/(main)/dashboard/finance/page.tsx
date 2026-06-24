@@ -9,7 +9,7 @@ import { MappedHistory } from "./_components/mapped-history";
 import { MappedInvestments } from "./_components/mapped-investments";
 import { MappedTransactions } from "./_components/mapped-transactions";
 import { MappedWithdrawals } from "./_components/mapped-withdrawals";
-import { OverviewKpis } from "./_components/overview-kpis";
+import { MonthlyGrowthCard, TeamBusinessCard, TotalStakedCard, WalletBalanceCard } from "./_components/overview-kpis";
 import { ProxyWalletManager } from "./_components/proxy-wallet-manager";
 import { UpcomingTransactions } from "./_components/upcoming-transactions";
 
@@ -31,19 +31,23 @@ export default function Page() {
             <TabsTrigger value="custom">Transactions</TabsTrigger>
           </TabsList>
 
-          <div className="flex flex-wrap items-center gap-3"></div>
+          <div className="flex flex-wrap items-center gap-3" />
         </div>
 
         <TabsContent value="30-days" className="flex flex-col gap-4">
-          <OverviewKpis />
-
           <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-12">
             <div className="flex flex-col gap-4 xl:col-span-6">
+              <TotalStakedCard />
               <MappedInvestments />
               <MappedHistory />
             </div>
 
             <div className="flex flex-col gap-4 xl:col-span-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <WalletBalanceCard />
+                <TeamBusinessCard />
+              </div>
+              <MonthlyGrowthCard />
               <ProxyWalletManager />
             </div>
           </div>

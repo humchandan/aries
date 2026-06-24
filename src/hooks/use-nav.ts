@@ -1,6 +1,7 @@
-'use client';
-import { useMemo } from 'react';
-import type { NavItem, NavGroup } from '@/types';
+"use client";
+import { useMemo } from "react";
+
+import type { NavGroup, NavItem } from "@/types";
 
 export function useFilteredNavItems(items: NavItem[]) {
   // We can add Web3Context role checking here later if we want RBAC
@@ -17,8 +18,8 @@ export function useFilteredNavGroups(groups: NavGroup[]) {
       .map((group) => ({
         ...group,
         items: filteredItems.filter((item) =>
-          group.items.some((gi) => gi.title === item.title && filteredSet.has(gi.title))
-        )
+          group.items.some((gi) => gi.title === item.title && filteredSet.has(gi.title)),
+        ),
       }))
       .filter((group) => group.items.length > 0);
   }, [groups, filteredItems]);

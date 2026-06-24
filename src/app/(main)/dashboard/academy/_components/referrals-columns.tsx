@@ -30,23 +30,93 @@ function RoleCell({ role, team }: { role: string; team: string }) {
 }
 
 const RANK_STYLES = [
-  { color: "text-zinc-400", bgColor: "bg-zinc-800/50", borderColor: "border-zinc-700", progressColor: "bg-zinc-500", dotClass: "bg-zinc-400", badgeClass: "bg-zinc-800 text-white border-zinc-700" },
-  { color: "text-amber-600", bgColor: "bg-amber-950/30", borderColor: "border-amber-800/50", progressColor: "bg-amber-600", dotClass: "bg-amber-500", badgeClass: "bg-amber-600/10 text-amber-500 border-amber-600/50" },
-  { color: "text-amber-500", bgColor: "bg-amber-950/40", borderColor: "border-amber-700/50", progressColor: "bg-amber-500", dotClass: "bg-amber-400", badgeClass: "bg-amber-500/10 text-amber-400 border-amber-500/50" },
-  { color: "text-slate-300", bgColor: "bg-slate-800/40", borderColor: "border-slate-600/50", progressColor: "bg-slate-400", dotClass: "bg-slate-300", badgeClass: "bg-slate-300/10 text-slate-300 border-slate-300/50" },
-  { color: "text-slate-200", bgColor: "bg-slate-800/60", borderColor: "border-slate-500/50", progressColor: "bg-slate-300", dotClass: "bg-slate-200", badgeClass: "bg-slate-200/10 text-slate-200 border-slate-200/50" },
-  { color: "text-yellow-400", bgColor: "bg-yellow-950/30", borderColor: "border-yellow-700/50", progressColor: "bg-yellow-500", dotClass: "bg-yellow-400", badgeClass: "bg-yellow-400/10 text-yellow-400 border-yellow-400/50" },
-  { color: "text-yellow-300", bgColor: "bg-yellow-950/40", borderColor: "border-yellow-600/50", progressColor: "bg-yellow-400", dotClass: "bg-yellow-300", badgeClass: "bg-yellow-300/10 text-yellow-300 border-yellow-300/50" },
-  { color: "text-cyan-400", bgColor: "bg-cyan-950/30", borderColor: "border-cyan-700/50", progressColor: "bg-cyan-500", dotClass: "bg-cyan-400", badgeClass: "bg-cyan-400/10 text-cyan-400 border-cyan-400/50" },
-  { color: "text-cyan-300", bgColor: "bg-cyan-950/40", borderColor: "border-cyan-600/50", progressColor: "bg-cyan-400", dotClass: "bg-cyan-300", badgeClass: "bg-cyan-300/10 text-cyan-300 border-cyan-300/50" },
-  { color: "text-violet-400", bgColor: "bg-violet-950/30", borderColor: "border-violet-700/50", progressColor: "bg-violet-500", dotClass: "bg-violet-400", badgeClass: "bg-violet-400/10 text-violet-400 border-violet-400/50" },
+  {
+    color: "text-zinc-400",
+    bgColor: "bg-zinc-800/50",
+    borderColor: "border-zinc-700",
+    progressColor: "bg-zinc-500",
+    dotClass: "bg-zinc-400",
+    badgeClass: "bg-zinc-800 text-white border-zinc-700",
+  },
+  {
+    color: "text-amber-600",
+    bgColor: "bg-amber-950/30",
+    borderColor: "border-amber-800/50",
+    progressColor: "bg-amber-600",
+    dotClass: "bg-amber-500",
+    badgeClass: "bg-amber-600/10 text-amber-500 border-amber-600/50",
+  },
+  {
+    color: "text-amber-500",
+    bgColor: "bg-amber-950/40",
+    borderColor: "border-amber-700/50",
+    progressColor: "bg-amber-500",
+    dotClass: "bg-amber-400",
+    badgeClass: "bg-amber-500/10 text-amber-400 border-amber-500/50",
+  },
+  {
+    color: "text-slate-300",
+    bgColor: "bg-slate-800/40",
+    borderColor: "border-slate-600/50",
+    progressColor: "bg-slate-400",
+    dotClass: "bg-slate-300",
+    badgeClass: "bg-slate-300/10 text-slate-300 border-slate-300/50",
+  },
+  {
+    color: "text-slate-200",
+    bgColor: "bg-slate-800/60",
+    borderColor: "border-slate-500/50",
+    progressColor: "bg-slate-300",
+    dotClass: "bg-slate-200",
+    badgeClass: "bg-slate-200/10 text-slate-200 border-slate-200/50",
+  },
+  {
+    color: "text-yellow-400",
+    bgColor: "bg-yellow-950/30",
+    borderColor: "border-yellow-700/50",
+    progressColor: "bg-yellow-500",
+    dotClass: "bg-yellow-400",
+    badgeClass: "bg-yellow-400/10 text-yellow-400 border-yellow-400/50",
+  },
+  {
+    color: "text-yellow-300",
+    bgColor: "bg-yellow-950/40",
+    borderColor: "border-yellow-600/50",
+    progressColor: "bg-yellow-400",
+    dotClass: "bg-yellow-300",
+    badgeClass: "bg-yellow-300/10 text-yellow-300 border-yellow-300/50",
+  },
+  {
+    color: "text-cyan-400",
+    bgColor: "bg-cyan-950/30",
+    borderColor: "border-cyan-700/50",
+    progressColor: "bg-cyan-500",
+    dotClass: "bg-cyan-400",
+    badgeClass: "bg-cyan-400/10 text-cyan-400 border-cyan-400/50",
+  },
+  {
+    color: "text-cyan-300",
+    bgColor: "bg-cyan-950/40",
+    borderColor: "border-cyan-600/50",
+    progressColor: "bg-cyan-400",
+    dotClass: "bg-cyan-300",
+    badgeClass: "bg-cyan-300/10 text-cyan-300 border-cyan-300/50",
+  },
+  {
+    color: "text-violet-400",
+    bgColor: "bg-violet-950/30",
+    borderColor: "border-violet-700/50",
+    progressColor: "bg-violet-500",
+    dotClass: "bg-violet-400",
+    badgeClass: "bg-violet-400/10 text-violet-400 border-violet-400/50",
+  },
 ];
 
-function StatusBadge({ status, mlmTiers }: { status: string, mlmTiers: any[] }) {
+function StatusBadge({ status, mlmTiers }: { status: string; mlmTiers: any[] }) {
   // Try to find rank level based on mlmTiers
   let tierIdx = 0;
   if (mlmTiers && mlmTiers.length > 0) {
-    const foundIdx = mlmTiers.findIndex(t => t.name.toLowerCase() === status.toLowerCase());
+    const foundIdx = mlmTiers.findIndex((t) => t.name.toLowerCase() === status.toLowerCase());
     if (foundIdx !== -1) {
       tierIdx = foundIdx;
     }
@@ -196,7 +266,11 @@ export const referralsColumns: ColumnDef<any>[] = [
     header: "Total Team Business",
     cell: ({ row }) => (
       <div className="text-sm font-semibold">
-        {Number(row.original.teamBusiness).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ARES
+        {Number(row.original.teamBusiness).toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}{" "}
+        ARES
       </div>
     ),
   },
@@ -213,7 +287,9 @@ export const referralsColumns: ColumnDef<any>[] = [
     id: "joinedDate",
     accessorFn: (row) => new Date(row.joinedDate).getTime(),
     header: "Joined date",
-    cell: ({ row }) => <div className="text-foreground text-sm">{new Date(row.original.joinedDate).toLocaleDateString()}</div>,
+    cell: ({ row }) => (
+      <div className="text-foreground text-sm">{new Date(row.original.joinedDate).toLocaleDateString()}</div>
+    ),
   },
   {
     id: "actions",

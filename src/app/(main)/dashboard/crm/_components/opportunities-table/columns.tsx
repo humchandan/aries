@@ -9,112 +9,70 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 
-import type { OpportunityRow } from "./schema";
+export type StakerRow = {
+  id: number;
+  mobile: string;
+  name: string;
+  walletAddress: string;
+  rank: string;
+  level: number | "N/A";
+  staked: number;
+  teamVolume: number;
+};
 
-const healthStripSlots = Array.from({ length: 18 }, (_, index) => ({
-  id: `strip-${index + 1}`,
-  threshold: index + 1,
-}));
-
-function getHealthScore(health: OpportunityRow["health"]) {
-  switch (health) {
-    case "On Track":
-      return 18;
-    case "Needs Review":
-      return 11;
-    case "At Risk":
-      return 7;
-    case "On Hold":
-      return 4;
-    default:
-      return 0;
-  }
-}
-
-export const opportunitiesColumns: ColumnDef<OpportunityRow>[] = [
+export const opportunitiesColumns: ColumnDef<StakerRow>[] = [
   {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all opportunities"
-      />
-    ),
+    accessorKey: "mobile",
+    header: "Mobile No",
+    cell: ({ row }) => <div className="text-sm tracking-tight">{row.original.mobile || "N/A"}</div>,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "name",
+    header: "Name",
     cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label={`Select ${row.original.account}`}
-      />
+      <div className="flex flex-col">
+        <span className="font-medium text-sm">{row.original.name || "Unknown"}</span>
+        <span className="text-xs text-muted-foreground truncate w-32" title={row.original.walletAddress}>
+          {row.original.walletAddress.substring(0, 6)}...{row.original.walletAddress.slice(-4)}
+        </span>
+      </div>
     ),
-    enableHiding: false,
   },
   {
-    accessorKey: "id",
-    header: "ID",
-    cell: ({ row }) => <div className="text-sm tracking-tight">{row.original.id}</div>,
-    enableHiding: false,
-  },
-  {
-    accessorKey: "account",
-    header: "Account",
-    cell: ({ row }) => <div className="font-medium text-sm">{row.original.account}</div>,
-  },
-  {
-    accessorKey: "stage",
-    header: "Stage",
+    accessorKey: "rank",
+    header: "Rank",
     cell: ({ row }) => (
       <Badge variant="outline" className="rounded-full px-2.5">
-        {row.original.stage}
+        {row.original.rank || "Default"}
       </Badge>
     ),
-    filterFn: "equalsString",
   },
   {
-    accessorKey: "priority",
-    header: "Priority",
-    cell: ({ row }) => <div className="text-sm">{row.original.priority}</div>,
-  },
-  {
-    accessorKey: "health",
-    header: "Health",
+    accessorKey: "level",
+    header: "Level Depth",
     cell: ({ row }) => (
-      <div className="flex items-end gap-0.5" title={row.original.health}>
-        <span className="sr-only">{row.original.health}</span>
-        {healthStripSlots.map((slot) => (
-          <div
-            key={`${row.original.id}-${slot.id}`}
-            className={cn(
-              "h-5 w-1 rounded-full",
-              slot.threshold <= getHealthScore(row.original.health) ? "bg-green-500/85" : "bg-green-500/15",
-            )}
-          />
-        ))}
+      <div className="text-sm font-medium">
+        {row.original.level !== "N/A" ? `Level ${row.original.level}` : "Not in Tree"}
       </div>
     ),
-    filterFn: "equalsString",
   },
   {
-    accessorKey: "value",
-    header: "Value",
-    cell: ({ row }) => <div className="font-medium text-sm tabular-nums">{row.original.value}</div>,
-  },
-  {
-    id: "actions",
-    header: () => <div className="text-right">Edit</div>,
-    cell: () => (
-      <div className="text-right">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-8 rounded-full text-muted-foreground hover:bg-transparent focus-visible:bg-transparent"
-        >
-          <Pencil />
-          <span className="sr-only">Edit opportunity</span>
-        </Button>
+    accessorKey: "staked",
+    header: "Staked Amount",
+    cell: ({ row }) => (
+      <div className="font-medium tabular-nums text-emerald-400">
+        {row.original.staked.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ARES
       </div>
     ),
-    enableHiding: false,
+  },
+  {
+    accessorKey: "teamVolume",
+    header: "Team Business",
+    cell: ({ row }) => (
+      <div className="font-bold tabular-nums">
+        {row.original.teamVolume.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ARES
+      </div>
+    ),
   },
 ];

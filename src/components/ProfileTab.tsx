@@ -1,57 +1,60 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useWeb3 } from '@/context/Web3Context';
-import { BackgroundGradient } from './ui/background-gradient';
+import type React from "react";
+import { useEffect, useState } from "react";
+
+import { useWeb3 } from "@/context/Web3Context";
+
+import { BackgroundGradient } from "./ui/background-gradient";
 
 export default function ProfileTab() {
   const { userAddress, jwtToken, userProfile, loadProfile } = useWeb3();
 
   // Form input states
-  const [name, setName] = useState('');
-  const [mobile, setMobile] = useState('');
-  const [address, setAddress] = useState('');
-  const [city, setCity] = useState('');
-  const [state, setState] = useState('');
-  const [zip, setZip] = useState('');
-  const [aadhaarNo, setAadhaarNo] = useState('');
-  const [panNo, setPanNo] = useState('');
+  const [name, setName] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [zip, setZip] = useState("");
+  const [aadhaarNo, setAadhaarNo] = useState("");
+  const [panNo, setPanNo] = useState("");
 
   // Uploaded document URL states
-  const [aadharFrontUrl, setAadharFrontUrl] = useState('');
-  const [aadharBackUrl, setAadharBackUrl] = useState('');
-  const [panCardUrl, setPanCardUrl] = useState('');
+  const [aadharFrontUrl, setAadharFrontUrl] = useState("");
+  const [aadharBackUrl, setAadharBackUrl] = useState("");
+  const [panCardUrl, setPanCardUrl] = useState("");
 
   // Loader & Toast states
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState({
     aadharFront: false,
     aadharBack: false,
-    panCard: false
+    panCard: false,
   });
-  const [toast, setToast] = useState({ message: '', show: false, isError: false });
+  const [toast, setToast] = useState({ message: "", show: false, isError: false });
 
   const showToast = (message: string, isError = false) => {
     setToast({ message, show: true, isError });
     setTimeout(() => {
-      setToast(prev => ({ ...prev, show: false }));
+      setToast((prev) => ({ ...prev, show: false }));
     }, 4000);
   };
 
   // Sync inputs with userProfile once loaded
   useEffect(() => {
     if (userProfile) {
-      setName(userProfile.name || '');
-      setMobile(userProfile.mobile || '');
-      setAddress(userProfile.address || '');
-      setCity(userProfile.city || '');
-      setState(userProfile.state || '');
-      setZip(userProfile.zip || '');
-      setAadhaarNo(userProfile.aadhaarNo || '');
-      setPanNo(userProfile.panNo || '');
-      setAadharFrontUrl(userProfile.aadharFrontUrl || '');
-      setAadharBackUrl(userProfile.aadharBackUrl || '');
-      setPanCardUrl(userProfile.panCardUrl || '');
+      setName(userProfile.name || "");
+      setMobile(userProfile.mobile || "");
+      setAddress(userProfile.address || "");
+      setCity(userProfile.city || "");
+      setState(userProfile.state || "");
+      setZip(userProfile.zip || "");
+      setAadhaarNo(userProfile.aadhaarNo || "");
+      setPanNo(userProfile.panNo || "");
+      setAadharFrontUrl(userProfile.aadharFrontUrl || "");
+      setAadharBackUrl(userProfile.aadharBackUrl || "");
+      setPanCardUrl(userProfile.panCardUrl || "");
     }
   }, [userProfile]);
 
@@ -66,22 +69,22 @@ export default function ProfileTab() {
     }
 
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append("file", file);
 
-    setUploading(prev => ({ ...prev, [type]: true }));
+    setUploading((prev) => ({ ...prev, [type]: true }));
     try {
-      const res = await fetch('/api/user/upload', {
-        method: 'POST',
+      const res = await fetch("/api/user/upload", {
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${jwtToken}`
+          Authorization: `Bearer ${jwtToken}`,
         },
-        body: formData
+        body: formData,
       });
       const data = await res.json();
       if (res.ok && data.url) {
-        if (type === 'aadharFront') setAadharFrontUrl(data.url);
-        if (type === 'aadharBack') setAadharBackUrl(data.url);
-        if (type === 'panCard') setPanCardUrl(data.url);
+        if (type === "aadharFront") setAadharFrontUrl(data.url);
+        if (type === "aadharBack") setAadharBackUrl(data.url);
+        if (type === "panCard") setPanCardUrl(data.url);
         showToast("Document uploaded successfully!", false);
       } else {
         showToast(data.error || "Upload failed.", true);
@@ -90,7 +93,7 @@ export default function ProfileTab() {
       console.error(err);
       showToast("Failed to upload document file.", true);
     } finally {
-      setUploading(prev => ({ ...prev, [type]: false }));
+      setUploading((prev) => ({ ...prev, [type]: false }));
     }
   };
 
@@ -111,11 +114,11 @@ export default function ProfileTab() {
 
     try {
       setLoading(true);
-      const res = await fetch('/api/user/profile', {
-        method: 'POST',
+      const res = await fetch("/api/user/profile", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${jwtToken}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${jwtToken}`,
         },
         body: JSON.stringify({
           name,
@@ -128,10 +131,10 @@ export default function ProfileTab() {
           panNo,
           aadharFrontUrl,
           aadharBackUrl,
-          panCardUrl
-        })
+          panCardUrl,
+        }),
       });
-      
+
       const data = await res.json();
       if (res.ok && data.success) {
         showToast("Profile details saved successfully!", false);
@@ -149,25 +152,25 @@ export default function ProfileTab() {
 
   const remainingUpdates = userProfile?.profileUpdatesRemaining ?? 3;
   const isLocked = remainingUpdates <= 0;
-  const rank = userProfile?.rank || 'Default';
+  const rank = userProfile?.rank || "Default";
 
   return (
     <div id="tab-profile" className="space-y-6">
-
       {/* Toast */}
       {toast.show && (
-        <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-xl border shadow-2xl backdrop-blur-xl text-sm font-semibold ${
-          toast.isError
-            ? 'bg-red-950/90 border-red-800/60 text-red-200'
-            : 'bg-emerald-950/90 border-emerald-800/60 text-emerald-200'
-        }`}>
-          <i className={`fa-solid ${toast.isError ? 'fa-circle-exclamation' : 'fa-circle-check'} text-sm`} />
+        <div
+          className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-xl border shadow-2xl backdrop-blur-xl text-sm font-semibold ${
+            toast.isError
+              ? "bg-red-950/90 border-red-800/60 text-red-200"
+              : "bg-emerald-950/90 border-emerald-800/60 text-emerald-200"
+          }`}
+        >
+          <i className={`fa-solid ${toast.isError ? "fa-circle-exclamation" : "fa-circle-check"} text-sm`} />
           <span>{toast.message}</span>
         </div>
       )}
 
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-4 sm:gap-6">
-
         {/* LEFT: Profile Form */}
         <div className="bg-zinc-900/50 border border-zinc-800/60 rounded-2xl p-4 sm:p-6 md:p-8 relative overflow-hidden hover:border-zinc-700/50 transition-all duration-300">
           {isLocked && (
@@ -178,21 +181,26 @@ export default function ProfileTab() {
 
           <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-4">Personal</div>
           <h2 className="text-xl font-bold text-white tracking-tight mb-1.5">Profile Settings</h2>
-          <p className="text-sm text-zinc-400 mb-6 leading-relaxed">Keep your details updated. You can change your information up to 3 times. Verify your profile for account compliance.</p>
+          <p className="text-sm text-zinc-400 mb-6 leading-relaxed">
+            Keep your details updated. You can change your information up to 3 times. Verify your profile for account
+            compliance.
+          </p>
 
           {/* Status Banner */}
           {isLocked ? (
             <div className="flex items-start gap-3 p-4 bg-red-950/40 border border-red-900/40 rounded-xl text-xs text-red-400 mb-6">
               <i className="fa-solid fa-lock text-base flex-shrink-0 mt-0.5" />
               <div>
-                <strong>All updates used!</strong> Your profile settings are now permanently locked for verification. Contact support for assistance.
+                <strong>All updates used!</strong> Your profile settings are now permanently locked for verification.
+                Contact support for assistance.
               </div>
             </div>
           ) : (
             <div className="flex items-start gap-3 p-4 bg-blue-950/30 border border-blue-900/40 rounded-xl text-xs text-blue-400 mb-6">
               <i className="fa-solid fa-circle-info text-base flex-shrink-0 mt-0.5" />
               <div>
-                <strong>Profile Updates: {remainingUpdates} of 3 remaining.</strong> Saving changes will decrease your remaining edit attempts.
+                <strong>Profile Updates: {remainingUpdates} of 3 remaining.</strong> Saving changes will decrease your
+                remaining edit attempts.
               </div>
             </div>
           )}
@@ -200,11 +208,30 @@ export default function ProfileTab() {
           <form onSubmit={handleSaveProfile} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
-                { label: 'Full Name', id: 'p-name', type: 'text', value: name, setter: setName, placeholder: 'Enter full legal name' },
-                { label: 'Mobile Number', id: 'p-mobile', type: 'text', value: mobile, setter: setMobile, placeholder: 'e.g. +1234567890' },
-              ].map(field => (
+                {
+                  label: "Full Name",
+                  id: "p-name",
+                  type: "text",
+                  value: name,
+                  setter: setName,
+                  placeholder: "Enter full legal name",
+                },
+                {
+                  label: "Mobile Number",
+                  id: "p-mobile",
+                  type: "text",
+                  value: mobile,
+                  setter: setMobile,
+                  placeholder: "e.g. +1234567890",
+                },
+              ].map((field) => (
                 <div key={field.id}>
-                  <label htmlFor={field.id} className="block text-xs font-semibold text-zinc-500 mb-2 uppercase tracking-wide">{field.label}</label>
+                  <label
+                    htmlFor={field.id}
+                    className="block text-xs font-semibold text-zinc-500 mb-2 uppercase tracking-wide"
+                  >
+                    {field.label}
+                  </label>
                   <input
                     type={field.type}
                     id={field.id}
@@ -220,11 +247,33 @@ export default function ProfileTab() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
-                { label: 'Aadhaar Card Number', id: 'p-aadhar-no', type: 'text', value: aadhaarNo, setter: setAadhaarNo, placeholder: '12-digit Aadhaar Number', maxLen: 12 },
-                { label: 'PAN Card Number', id: 'p-pan-no', type: 'text', value: panNo, setter: setPanNo, placeholder: '10-digit PAN Number', maxLen: 10, upper: true },
-              ].map(field => (
+                {
+                  label: "Aadhaar Card Number",
+                  id: "p-aadhar-no",
+                  type: "text",
+                  value: aadhaarNo,
+                  setter: setAadhaarNo,
+                  placeholder: "12-digit Aadhaar Number",
+                  maxLen: 12,
+                },
+                {
+                  label: "PAN Card Number",
+                  id: "p-pan-no",
+                  type: "text",
+                  value: panNo,
+                  setter: setPanNo,
+                  placeholder: "10-digit PAN Number",
+                  maxLen: 10,
+                  upper: true,
+                },
+              ].map((field) => (
                 <div key={field.id}>
-                  <label htmlFor={field.id} className="block text-xs font-semibold text-zinc-500 mb-2 uppercase tracking-wide">{field.label}</label>
+                  <label
+                    htmlFor={field.id}
+                    className="block text-xs font-semibold text-zinc-500 mb-2 uppercase tracking-wide"
+                  >
+                    {field.label}
+                  </label>
                   <input
                     type={field.type}
                     id={field.id}
@@ -233,14 +282,19 @@ export default function ProfileTab() {
                     onChange={(e) => field.setter(e.target.value)}
                     placeholder={field.placeholder}
                     maxLength={field.maxLen}
-                    className={`w-full bg-zinc-950/80 border border-zinc-800/60 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600/30 placeholder-zinc-600 transition-all disabled:opacity-40 disabled:cursor-not-allowed ${field.upper ? 'uppercase' : ''}`}
+                    className={`w-full bg-zinc-950/80 border border-zinc-800/60 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600/30 placeholder-zinc-600 transition-all disabled:opacity-40 disabled:cursor-not-allowed ${field.upper ? "uppercase" : ""}`}
                   />
                 </div>
               ))}
             </div>
 
             <div>
-              <label htmlFor="p-address" className="block text-xs font-semibold text-zinc-500 mb-2 uppercase tracking-wide">Residential Address</label>
+              <label
+                htmlFor="p-address"
+                className="block text-xs font-semibold text-zinc-500 mb-2 uppercase tracking-wide"
+              >
+                Residential Address
+              </label>
               <input
                 type="text"
                 id="p-address"
@@ -254,12 +308,17 @@ export default function ProfileTab() {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               {[
-                { label: 'City', id: 'p-city', value: city, setter: setCity, placeholder: 'City' },
-                { label: 'State', id: 'p-state', value: state, setter: setState, placeholder: 'State' },
-                { label: 'ZIP / PIN', id: 'p-zip', value: zip, setter: setZip, placeholder: 'ZIP Code' },
-              ].map(field => (
+                { label: "City", id: "p-city", value: city, setter: setCity, placeholder: "City" },
+                { label: "State", id: "p-state", value: state, setter: setState, placeholder: "State" },
+                { label: "ZIP / PIN", id: "p-zip", value: zip, setter: setZip, placeholder: "ZIP Code" },
+              ].map((field) => (
                 <div key={field.id}>
-                  <label htmlFor={field.id} className="block text-xs font-semibold text-zinc-500 mb-2 uppercase tracking-wide">{field.label}</label>
+                  <label
+                    htmlFor={field.id}
+                    className="block text-xs font-semibold text-zinc-500 mb-2 uppercase tracking-wide"
+                  >
+                    {field.label}
+                  </label>
                   <input
                     type="text"
                     id={field.id}
@@ -279,7 +338,13 @@ export default function ProfileTab() {
                 disabled={loading || isLocked}
                 className="w-full py-3.5 bg-white text-black font-bold rounded-xl text-sm hover:bg-zinc-100 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                {loading ? <><i className="fa-solid fa-spinner fa-spin" /> Saving...</> : '💾 Save Profile Details'}
+                {loading ? (
+                  <>
+                    <i className="fa-solid fa-spinner fa-spin" /> Saving...
+                  </>
+                ) : (
+                  "💾 Save Profile Details"
+                )}
               </button>
             </div>
           </form>
@@ -287,7 +352,6 @@ export default function ProfileTab() {
 
         {/* RIGHT: Rank + Documents */}
         <div className="flex flex-col gap-4 sm:gap-6">
-
           {/* Rank Card */}
           <BackgroundGradient className="bg-zinc-900 border border-zinc-800 rounded-[22px] p-4 sm:p-6 relative overflow-hidden w-full h-full">
             <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-4">MLM Status</div>
@@ -306,14 +370,37 @@ export default function ProfileTab() {
           <div className="bg-zinc-900/50 border border-zinc-800/60 rounded-2xl p-4 sm:p-6 md:p-8 hover:border-zinc-700/50 transition-all duration-300">
             <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-4">KYC</div>
             <h2 className="text-xl font-bold text-white tracking-tight mb-1.5">Identity Documents</h2>
-            <p className="text-sm text-zinc-400 mb-6 leading-relaxed">Upload high-quality scans of your KYC credentials.</p>
+            <p className="text-sm text-zinc-400 mb-6 leading-relaxed">
+              Upload high-quality scans of your KYC credentials.
+            </p>
 
             <div className="space-y-4">
               {[
-                { key: 'aadharFront', label: 'Aadhaar Front', subtitle: 'Front side of card copy', url: aadharFrontUrl, uploading: uploading.aadharFront, alt: 'Aadhaar Front' },
-                { key: 'aadharBack', label: 'Aadhaar Back', subtitle: 'Reverse address side', url: aadharBackUrl, uploading: uploading.aadharBack, alt: 'Aadhaar Back' },
-                { key: 'panCard', label: 'PAN Card', subtitle: 'Front tax identification card', url: panCardUrl, uploading: uploading.panCard, alt: 'PAN Card' },
-              ].map(doc => (
+                {
+                  key: "aadharFront",
+                  label: "Aadhaar Front",
+                  subtitle: "Front side of card copy",
+                  url: aadharFrontUrl,
+                  uploading: uploading.aadharFront,
+                  alt: "Aadhaar Front",
+                },
+                {
+                  key: "aadharBack",
+                  label: "Aadhaar Back",
+                  subtitle: "Reverse address side",
+                  url: aadharBackUrl,
+                  uploading: uploading.aadharBack,
+                  alt: "Aadhaar Back",
+                },
+                {
+                  key: "panCard",
+                  label: "PAN Card",
+                  subtitle: "Front tax identification card",
+                  url: panCardUrl,
+                  uploading: uploading.panCard,
+                  alt: "PAN Card",
+                },
+              ].map((doc) => (
                 <div key={doc.key} className="bg-zinc-950/40 rounded-xl border border-zinc-800/40 p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div>
@@ -321,23 +408,38 @@ export default function ProfileTab() {
                       <div className="text-[10px] text-zinc-500 mt-0.5">{doc.subtitle}</div>
                     </div>
                     {doc.url ? (
-                      <span className="text-[10px] font-bold bg-emerald-950/60 text-emerald-400 border border-emerald-900/40 rounded-full px-2.5 py-0.5">✓ Uploaded</span>
+                      <span className="text-[10px] font-bold bg-emerald-950/60 text-emerald-400 border border-emerald-900/40 rounded-full px-2.5 py-0.5">
+                        ✓ Uploaded
+                      </span>
                     ) : (
-                      <span className="text-[10px] font-bold bg-zinc-800/60 text-zinc-500 rounded-full px-2.5 py-0.5">Empty</span>
+                      <span className="text-[10px] font-bold bg-zinc-800/60 text-zinc-500 rounded-full px-2.5 py-0.5">
+                        Empty
+                      </span>
                     )}
                   </div>
 
                   {doc.url && (
                     <div className="mb-3 rounded-xl overflow-hidden border border-zinc-800/40 aspect-[1.6/1] bg-black flex items-center justify-center relative group">
                       <img src={doc.url} alt={doc.alt} className="object-contain h-full w-full" />
-                      <a href={doc.url} target="_blank" rel="noreferrer" className="absolute inset-0 bg-black/60 flex items-center justify-center text-xs text-white opacity-0 group-hover:opacity-100 transition duration-200">
+                      <a
+                        href={doc.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="absolute inset-0 bg-black/60 flex items-center justify-center text-xs text-white opacity-0 group-hover:opacity-100 transition duration-200"
+                      >
                         <i className="fa-solid fa-expand mr-1.5" /> View Original
                       </a>
                     </div>
                   )}
 
-                  <label className={`flex items-center justify-center gap-2 w-full py-2.5 bg-zinc-800/60 hover:bg-zinc-700/60 border border-zinc-700/40 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white transition-all cursor-pointer ${isLocked ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''}`}>
-                    {doc.uploading ? <i className="fa-solid fa-spinner fa-spin" /> : <i className="fa-solid fa-upload" />}
+                  <label
+                    className={`flex items-center justify-center gap-2 w-full py-2.5 bg-zinc-800/60 hover:bg-zinc-700/60 border border-zinc-700/40 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white transition-all cursor-pointer ${isLocked ? "opacity-40 cursor-not-allowed pointer-events-none" : ""}`}
+                  >
+                    {doc.uploading ? (
+                      <i className="fa-solid fa-spinner fa-spin" />
+                    ) : (
+                      <i className="fa-solid fa-upload" />
+                    )}
                     {doc.url ? `Replace ${doc.label}` : `Upload ${doc.label}`}
                     <input
                       type="file"
@@ -351,10 +453,8 @@ export default function ProfileTab() {
               ))}
             </div>
           </div>
-
         </div>
       </div>
     </div>
   );
 }
-

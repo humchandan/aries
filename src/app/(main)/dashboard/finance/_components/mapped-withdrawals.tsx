@@ -1,13 +1,15 @@
 "use client";
 
 import * as React from "react";
+
 import { ethers } from "ethers";
-import { useWeb3 } from "@/hooks/useWeb3";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Info, Loader2 } from "lucide-react";
-import { toast } from "sonner"; 
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useWeb3 } from "@/hooks/useWeb3";
 
 export function MappedWithdrawals() {
   const { userAddress, userProfile, provider, signer, jwtToken, loadProfile } = useWeb3();
@@ -34,7 +36,7 @@ export function MappedWithdrawals() {
     const totalClaimed = parseFloat(userProfile.totalClaimed) || 0;
     const maxLimit = selfInvestment * 2.5;
 
-    let initialAccrued = baseYield + (elapsedSeconds * ratePerSec);
+    let initialAccrued = baseYield + elapsedSeconds * ratePerSec;
     if (totalClaimed + initialAccrued > maxLimit) {
       initialAccrued = maxLimit - totalClaimed;
     }
@@ -115,14 +117,10 @@ export function MappedWithdrawals() {
         const portalJson = await portalJsonRes.json();
         const portalContract = new ethers.Contract(portalAddress, portalJson.abi, signer);
 
-        const tx = await portalContract.claimRewards(
-          userProfile.proxyAddress,
-          newTotalEligible,
-          deadline,
-          signature,
-          { gasPrice: ethers.parseUnits("1.5", "gwei") }
-        );
-        
+        const tx = await portalContract.claimRewards(userProfile.proxyAddress, newTotalEligible, deadline, signature, {
+          gasPrice: ethers.parseUnits("1.5", "gwei"),
+        });
+
         toast.info("Waiting for transaction confirmation...");
         const receipt = await tx.wait();
 
@@ -170,7 +168,9 @@ export function MappedWithdrawals() {
           throw new Error(claimData.error || "Utility claim API error.");
         }
 
-        toast.success(`Claim complete! ${parseFloat(claimData.claimedAmount).toFixed(2)} ARES credited to Utility Wallet.`);
+        toast.success(
+          `Claim complete! ${parseFloat(claimData.claimedAmount).toFixed(2)} ARES credited to Utility Wallet.`,
+        );
         await loadProfile();
       } catch (err: any) {
         console.error("Utility claim failed:", err);
@@ -181,9 +181,9 @@ export function MappedWithdrawals() {
     }
   };
 
-  const adminFee = accruedRewards * 0.10;
+  const adminFee = accruedRewards * 0.1;
   const netClaimed = accruedRewards - adminFee;
-  const metamaskShare = netClaimed * 0.50;
+  const metamaskShare = netClaimed * 0.5;
   const utilityShare = netClaimed - metamaskShare;
 
   return (
@@ -198,7 +198,11 @@ export function MappedWithdrawals() {
       </CardHeader>
 
       <CardContent className="flex-1 flex flex-col justify-between">
-        <Tabs defaultValue="metamask" onValueChange={(v) => setWithdrawalType(v as "metamask" | "utility")} className="mb-6">
+        <Tabs
+          defaultValue="metamask"
+          onValueChange={(v) => setWithdrawalType(v as "metamask" | "utility")}
+          className="mb-6"
+        >
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="metamask">MetaMask Split</TabsTrigger>
             <TabsTrigger value="utility">Utility Wallet</TabsTrigger>
@@ -212,7 +216,9 @@ export function MappedWithdrawals() {
             <div className="text-sm text-zinc-500 font-mono mt-1">ARES</div>
           </div>
 
-          <div className={`mt-4 flex items-start gap-3 p-4 rounded-xl border text-sm ${withdrawalType === "metamask" ? "bg-cyan-500/10 border-cyan-500/20 text-cyan-400" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"}`}>
+          <div
+            className={`mt-4 flex items-start gap-3 p-4 rounded-xl border text-sm ${withdrawalType === "metamask" ? "bg-cyan-500/10 border-cyan-500/20 text-cyan-400" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"}`}
+          >
             <Info className="w-5 h-5 flex-shrink-0 mt-0.5" />
             <p className="leading-relaxed">
               {withdrawalType === "metamask"
@@ -223,12 +229,14 @@ export function MappedWithdrawals() {
 
           {accruedRewards > 0 && userProfile?.selfInvestment && parseFloat(userProfile.selfInvestment) > 0 && (
             <div className="mt-6 space-y-2">
-              <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3">Estimated Distribution</div>
+              <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3">
+                Estimated Distribution
+              </div>
               <div className="flex justify-between text-sm">
                 <span className="text-zinc-400">Admin Fee (10%)</span>
                 <span className="font-mono text-red-400">-{adminFee.toFixed(6)}</span>
               </div>
-              
+
               {withdrawalType === "metamask" ? (
                 <>
                   <div className="flex justify-between text-sm">

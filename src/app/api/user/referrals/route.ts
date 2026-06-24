@@ -1,11 +1,12 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { verifyToken } from '@/lib/auth';
+import { NextResponse } from "next/server";
+
+import { verifyToken } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(request: Request) {
   const walletAddress = verifyToken(request);
   if (!walletAddress) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -18,15 +19,15 @@ export async function GET(request: Request) {
         mobile: true,
         rank: true,
         createdAt: true,
-      }
+      },
     });
 
     // 2. Fetch all staking plans and aggregate by user
     const stakingAggregations = await prisma.stakingPlan.groupBy({
-      by: ['userAddress'],
+      by: ["userAddress"],
       _sum: {
         amount: true,
-      }
+      },
     });
 
     // Create maps for quick lookup
@@ -34,7 +35,7 @@ export async function GET(request: Request) {
     const childrenMap = new Map<string, string[]>();
     const stakingMap = new Map<string, number>();
 
-    allUsers.forEach(u => {
+    allUsers.forEach((u) => {
       const addr = u.walletAddress.toLowerCase();
       userMap.set(addr, { ...u, walletAddress: addr, sponsorAddress: u.sponsorAddress.toLowerCase() });
       if (!childrenMap.has(addr)) {
@@ -42,7 +43,7 @@ export async function GET(request: Request) {
       }
     });
 
-    allUsers.forEach(u => {
+    allUsers.forEach((u) => {
       const sponsor = u.sponsorAddress.toLowerCase();
       if (childrenMap.has(sponsor)) {
         childrenMap.get(sponsor)!.push(u.walletAddress.toLowerCase());
@@ -51,7 +52,7 @@ export async function GET(request: Request) {
       }
     });
 
-    stakingAggregations.forEach(st => {
+    stakingAggregations.forEach((st) => {
       stakingMap.set(st.userAddress.toLowerCase(), Number(st._sum.amount || 0));
     });
 
@@ -64,10 +65,10 @@ export async function GET(request: Request) {
         const current = stack.pop()!;
         if (visited.has(current)) continue;
         visited.add(current);
-        
+
         // Let's include their own:
         total += stakingMap.get(current) || 0;
-        
+
         const children = childrenMap.get(current) || [];
         for (const child of children) {
           stack.push(child);
@@ -80,20 +81,20 @@ export async function GET(request: Request) {
     const referrals: any[] = [];
     const bfsVisited = new Set<string>();
     bfsVisited.add(walletAddress.toLowerCase());
-    
+
     // BFS to get up to 10 levels
-    let queue: { addr: string, level: number, uplineName: string }[] = [];
-    
+    const queue: { addr: string; level: number; uplineName: string }[] = [];
+
     const rootAddr = walletAddress.toLowerCase();
     const directChildren = childrenMap.get(rootAddr) || [];
-    
+
     for (const childAddr of directChildren) {
-      queue.push({ addr: childAddr, level: 1, uplineName: userMap.get(rootAddr)?.name || 'You' });
+      queue.push({ addr: childAddr, level: 1, uplineName: userMap.get(rootAddr)?.name || "You" });
     }
 
     while (queue.length > 0) {
       const { addr, level, uplineName } = queue.shift()!;
-      
+
       if (level > 10) continue; // Only up to 10 levels
       if (bfsVisited.has(addr)) continue;
       bfsVisited.add(addr);
@@ -108,7 +109,7 @@ export async function GET(request: Request) {
           sponsorAddress: userNode.sponsorAddress,
           name: userNode.name,
           // Hide mobile if level > 1
-          mobile: level === 1 ? userNode.mobile : '***-***-****',
+          mobile: level === 1 ? userNode.mobile : "***-***-****",
           rank: userNode.rank,
           level,
           uplineName,
@@ -129,9 +130,8 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json({ referrals });
-
   } catch (error) {
-    console.error('Referrals fetch error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error("Referrals fetch error:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

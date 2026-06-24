@@ -1,10 +1,10 @@
-import { prisma } from '@/lib/prisma';
-import { verifyToken } from '@/lib/auth';
+import { verifyToken } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(request) {
   const walletAddress = verifyToken(request);
   if (!walletAddress) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -13,13 +13,13 @@ export async function GET(request) {
       include: {
         services: {
           where: { isActive: true },
-        }
-      }
+        },
+      },
     });
 
     return Response.json({ categories });
   } catch (err) {
     console.error("Failed to fetch utility catalog:", err);
-    return Response.json({ error: 'Internal server error' }, { status: 500 });
+    return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

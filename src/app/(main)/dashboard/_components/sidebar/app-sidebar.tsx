@@ -1,11 +1,11 @@
 "use client";
 
+import { useMemo } from "react";
+
 import Link from "next/link";
 
 import { CircleHelp, ClipboardList, Command, Database, File, Search, Settings } from "lucide-react";
-import { useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { useWeb3 } from "@/hooks/useWeb3";
 
 import {
   Sidebar,
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/sidebar";
 import { APP_CONFIG } from "@/config/app-config";
 import { rootUser } from "@/data/users";
+import { useWeb3 } from "@/hooks/useWeb3";
 import { sidebarItems } from "@/navigation/sidebar/sidebar-items";
 import { usePreferencesStore } from "@/stores/preferences/preferences-provider";
 
@@ -77,11 +78,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const collapsible = isSynced ? sidebarCollapsible : props.collapsible;
 
   const filteredItems = useMemo(() => {
-    return sidebarItems.map(group => {
+    return sidebarItems.map((group) => {
       if (isAdmin) return group;
       return {
         ...group,
-        items: group.items.filter(item => item.id !== 'infrastructure')
+        items: group.items.filter((item) => item.id !== "infrastructure"),
       };
     });
   }, [isAdmin]);

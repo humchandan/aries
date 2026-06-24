@@ -1,19 +1,21 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useWeb3 } from '@/hooks/useWeb3';
-import { ethers } from 'ethers';
-import { waitForTransactionReceiptWithRetry } from '@/lib/txWaiter';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useEffect, useState } from "react";
+
+import { ethers } from "ethers";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { useWeb3 } from "@/hooks/useWeb3";
+import { waitForTransactionReceiptWithRetry } from "@/lib/txWaiter";
 
 export function MappedAccounts() {
   const { userAddress, jwtToken, userProfile, provider, signer, loadProfile } = useWeb3();
   const [proxyAddress, setProxyAddress] = useState<string | null>(null);
-  const [depositAmount, setDepositAmount] = useState('');
-  const [recipient, setRecipient] = useState('');
-  const [transferAmount, setTransferAmount] = useState('');
+  const [depositAmount, setDepositAmount] = useState("");
+  const [recipient, setRecipient] = useState("");
+  const [transferAmount, setTransferAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [balance, setBalance] = useState(0);
 
@@ -23,11 +25,11 @@ export function MappedAccounts() {
     if (!jwtToken || !userAddress) return;
     try {
       const balanceRes = await fetch(`/api/ledger/balance`, {
-        headers: { 'Authorization': `Bearer ${jwtToken}` }
+        headers: { Authorization: `Bearer ${jwtToken}` },
       });
       const balanceData = await balanceRes.json();
       setBalance(balanceData.balance || 0);
-      
+
       if (userProfile && userProfile.proxyAddress) {
         setProxyAddress(userProfile.proxyAddress);
       }
@@ -49,10 +51,10 @@ export function MappedAccounts() {
       const supportData = await supportResponse.json();
       const factoryContract = new ethers.Contract(supportData.address, supportData.abi, signer);
       const userId = ethers.keccak256(ethers.toUtf8Bytes("portal_user_" + userAddress!.toLowerCase()));
-      
+
       const tx = await factoryContract.createPortal(userId, { gasPrice: ethers.parseUnits("1.5", "gwei") });
       const receipt = await waitForTransactionReceiptWithRetry((signer.provider || provider)!, tx.hash);
-      
+
       let proxyAddr = null;
       for (const log of receipt.logs) {
         try {
@@ -67,8 +69,8 @@ export function MappedAccounts() {
       if (proxyAddr) {
         await fetch("/api/user/profile", {
           method: "POST",
-          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${jwtToken}` },
-          body: JSON.stringify({ proxyAddress: proxyAddr })
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${jwtToken}` },
+          body: JSON.stringify({ proxyAddress: proxyAddr }),
         });
         await loadProfile();
         setProxyAddress(proxyAddr);
@@ -91,11 +93,11 @@ export function MappedAccounts() {
       const tx = await signer.sendTransaction({
         to: proxyAddress,
         value: ethers.parseEther(amount.toString()),
-        gasPrice: ethers.parseUnits("1.5", "gwei")
+        gasPrice: ethers.parseUnits("1.5", "gwei"),
       });
       await waitForTransactionReceiptWithRetry((signer.provider || provider)!, tx.hash);
       alert(`Successfully deposited ${amount} ARES!`);
-      setDepositAmount('');
+      setDepositAmount("");
       loadLedgerAndProxy();
     } catch (err: any) {
       alert(err.message || "Deposit failed.");
@@ -113,15 +115,15 @@ export function MappedAccounts() {
     try {
       setLoading(true);
       const res = await fetch(`/api/ledger/transfer`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${jwtToken}` },
-        body: JSON.stringify({ recipient, amount: transferAmount })
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${jwtToken}` },
+        body: JSON.stringify({ recipient, amount: transferAmount }),
       });
       const data = await res.json();
       if (data.success) {
         alert(`Successfully sent utility credit!`);
-        setRecipient('');
-        setTransferAmount('');
+        setRecipient("");
+        setTransferAmount("");
         loadLedgerAndProxy();
       } else {
         alert(data.error || "Transfer failed.");
@@ -143,7 +145,9 @@ export function MappedAccounts() {
         <CardContent className="space-y-4">
           {!proxyAddress ? (
             <div className="flex flex-col gap-2 items-start">
-              <p className="text-sm text-muted-foreground">No Utility Wallet Found. Generate one to receive deposits.</p>
+              <p className="text-sm text-muted-foreground">
+                No Utility Wallet Found. Generate one to receive deposits.
+              </p>
               <Button onClick={handleCreateProxy} disabled={loading || !signer}>
                 {loading ? "Generating..." : "Create Utility Address"}
               </Button>
@@ -154,14 +158,18 @@ export function MappedAccounts() {
                 <label className="text-sm font-medium leading-none">Your Deposit Address</label>
                 <div className="flex gap-2">
                   <Input readOnly value={proxyAddress} />
-                  <Button variant="secondary" onClick={() => navigator.clipboard.writeText(proxyAddress)}>Copy</Button>
+                  <Button variant="secondary" onClick={() => navigator.clipboard.writeText(proxyAddress)}>
+                    Copy
+                  </Button>
                 </div>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium leading-none">Direct Deposit (ARES)</label>
                 <div className="flex gap-2">
-                  <Input type="number" value={depositAmount} onChange={e => setDepositAmount(e.target.value)} />
-                  <Button onClick={handleDepositProxy} disabled={loading || !signer}>Deposit</Button>
+                  <Input type="number" value={depositAmount} onChange={(e) => setDepositAmount(e.target.value)} />
+                  <Button onClick={handleDepositProxy} disabled={loading || !signer}>
+                    Deposit
+                  </Button>
                 </div>
               </div>
             </div>
@@ -178,11 +186,11 @@ export function MappedAccounts() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium leading-none">Recipient Wallet</label>
-              <Input placeholder="0x..." value={recipient} onChange={e => setRecipient(e.target.value)} />
+              <Input placeholder="0x..." value={recipient} onChange={(e) => setRecipient(e.target.value)} />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium leading-none">Amount</label>
-              <Input type="number" value={transferAmount} onChange={e => setTransferAmount(e.target.value)} />
+              <Input type="number" value={transferAmount} onChange={(e) => setTransferAmount(e.target.value)} />
             </div>
             <Button className="w-full" onClick={handleTransfer} disabled={loading || !signer}>
               {loading ? "Sending..." : "Send Funds"}

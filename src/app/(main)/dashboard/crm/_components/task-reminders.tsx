@@ -1,70 +1,100 @@
-import { CalendarDays, CalendarRange } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, ShieldCheck, TrendingDown, TrendingUp } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 
-const proposalSent = 12;
-const proposalGoal = 18;
-const proposalProgressPercentage = Math.round((proposalSent / proposalGoal) * 100);
-const proposalGoalBarCount = 42;
-const activeProposalBars = Math.round((proposalSent / proposalGoal) * proposalGoalBarCount);
+export async function TaskReminders() {
+  const ignoredWallets = ["0xd01c1bfc96e22a9470c186e69e0a97e18eff23e6", "0x6f8f3ccd90d63d24ed54270c03803cf12dbb6a32"];
 
-const proposalGoalBars = Array.from({ length: proposalGoalBarCount }, (_, index) => ({
-  id: `proposal-goal-${index + 1}`,
-  active: index < activeProposalBars,
-}));
+  // 1. Total Staked
+  const totalStakingQuery = await prisma.stakingPlan.aggregate({
+    _sum: { amount: true },
+    where: { userAddress: { notIn: ignoredWallets } },
+  });
+  const totalStaked = Number(totalStakingQuery._sum.amount || 0);
+  const maxLiability = totalStaked * 2.5;
 
-export function TaskReminders() {
+  // 2. Combined Withdrawals (Metamask + Utility)
+  const claimsQuery = await prisma.claimHistory.aggregate({
+    _sum: { grossAmount: true },
+    where: { userAddress: { notIn: ignoredWallets } },
+  });
+  const totalWithdrawals = Number(claimsQuery._sum.grossAmount || 0);
+
+  // 3. User requested calculation: Total Withdrawals - (Total Staked * 2.5)
+  const difference = totalWithdrawals - maxLiability;
+  const isHealthy = difference <= 0;
+
+  // Calculate progress percentage (Claimed vs Liability)
+  const liabilityProgress = maxLiability > 0 ? Math.min(100, (totalWithdrawals / maxLiability) * 100) : 0;
+
+  // 42 bars for visual goal
+  const barCount = 42;
+  const activeBars = Math.round((liabilityProgress / 100) * barCount);
+  const goalBars = Array.from({ length: barCount }, (_, index) => ({
+    id: `liability-goal-${index + 1}`,
+    active: index < activeBars,
+  }));
+
   return (
     <section className="grid grid-cols-1 gap-4 xl:grid-cols-12">
       <Card className="xl:col-span-8">
         <CardHeader>
-          <CardTitle>Upcoming Meetings</CardTitle>
-          <CardAction>
-            <Button variant="outline" size="sm">
-              <CalendarDays data-icon="inline-start" />
-              View Calendar
-            </Button>
-          </CardAction>
+          <CardTitle>System Payout Liability</CardTitle>
+          <CardDescription>
+            Real-time tracking of maximum network liability against combined withdrawals.
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-1">
-            <div className="flex items-center justify-between text-muted-foreground text-xs tabular-nums">
-              <div className="flex flex-col items-center gap-1">
-                <span>08:45</span>
-                <span className="h-2 w-px bg-border" />
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <span>09:00</span>
-                <span className="h-2 w-px bg-border" />
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <span>10:00</span>
-                <span className="h-2 w-px bg-border" />
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <span>10:20</span>
-                <span className="h-2 w-px bg-border" />
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-2">
+            <div className="flex flex-col gap-2">
+              <span className="text-muted-foreground text-sm font-semibold uppercase tracking-wider">
+                Maximum Liability (Staked × 2.5)
+              </span>
+              <span className="text-4xl font-black text-foreground tracking-tight">
+                {maxLiability.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+              <span className="text-sm font-mono text-muted-foreground mt-1">ARES Token</span>
             </div>
 
-            <div className="relative h-14">
-              <div className="absolute inset-x-3 top-1/2 h-px -translate-y-1/2 bg-border/80" />
-              <div className="absolute top-2 bottom-2 left-[22%] flex w-[44%] items-center rounded-lg bg-primary px-2 text-primary-foreground shadow-sm">
-                <div className="flex items-center gap-2">
-                  <div className="flex size-7 items-center justify-center rounded-full bg-background text-primary">
-                    <CalendarRange className="size-3.5" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="truncate font-medium text-primary-foreground text-xs leading-none">
-                      Product demo with Tim
-                    </div>
-                    <div className="truncate text-[10px] text-primary-foreground/75">Weblabs Studio</div>
-                  </div>
+            <div className="flex flex-col gap-2">
+              <span className="text-muted-foreground text-sm font-semibold uppercase tracking-wider">
+                Combined Withdrawals (Claimed)
+              </span>
+              <span className="text-4xl font-black text-foreground tracking-tight">
+                {totalWithdrawals.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+              <span className="text-sm font-mono text-muted-foreground mt-1">ARES Token</span>
+            </div>
+          </div>
+
+          <div className="mt-10 p-5 rounded-2xl bg-zinc-950/50 border border-zinc-800/50 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div
+                className={cn(
+                  "w-12 h-12 rounded-full flex items-center justify-center",
+                  isHealthy ? "bg-emerald-500/10 text-emerald-500" : "bg-red-500/10 text-red-500",
+                )}
+              >
+                {isHealthy ? <ShieldCheck className="size-6" /> : <AlertTriangle className="size-6" />}
+              </div>
+              <div>
+                <div className="text-sm font-bold text-foreground">Net Liability Difference</div>
+                <div className="text-xs text-muted-foreground">
+                  Formula: Combined Withdrawals - (Total Staked × 2.5)
                 </div>
               </div>
-              <div className="absolute top-4 bottom-4 left-[64%] w-1 rounded-full bg-background/90" />
+            </div>
+            <div
+              className={cn(
+                "text-2xl font-black font-mono tracking-tighter",
+                isHealthy ? "text-emerald-500" : "text-red-500",
+              )}
+            >
+              {difference > 0 ? "+" : ""}
+              {difference.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </div>
         </CardContent>
@@ -72,29 +102,28 @@ export function TaskReminders() {
 
       <Card className="xl:col-span-4">
         <CardHeader>
-          <CardTitle>Monthly Proposal Goal</CardTitle>
+          <CardTitle>Global Limit Progress</CardTitle>
+          <CardDescription>Total Claims vs Maximum 2.5x Limit</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-1">
+        <CardContent className="flex flex-col gap-1 mt-4">
           <div className="flex items-end justify-between gap-3">
-            <div className="font-medium text-2xl tabular-nums leading-none">
-              {proposalSent} <span className="font-normal text-base text-muted-foreground">sent</span>
+            <div className="font-medium text-3xl tabular-nums leading-none tracking-tight">
+              {liabilityProgress.toFixed(1)}%{" "}
+              <span className="font-normal text-base text-muted-foreground">claimed</span>
             </div>
-            <div className="text-muted-foreground text-sm tabular-nums">{proposalGoal} target</div>
           </div>
-          <div className="flex h-10 w-full items-end gap-0.5">
-            {proposalGoalBars.map((bar) => (
+          <div className="flex h-12 w-full items-end gap-1 mt-6">
+            {goalBars.map((bar) => (
               <div key={bar.id} className="flex flex-1 justify-center">
                 <div
-                  className={cn(
-                    "h-10 w-1.5 rounded-full",
-                    bar.active ? "bg-muted-foreground/75" : "bg-muted-foreground/25",
-                  )}
+                  className={cn("h-12 w-2 rounded-full", bar.active ? "bg-emerald-500" : "bg-muted-foreground/20")}
                 />
               </div>
             ))}
           </div>
-          <p className="text-muted-foreground text-sm">
-            {proposalProgressPercentage}% of this month&apos;s proposal target reached.
+          <p className="text-muted-foreground text-sm mt-6 leading-relaxed">
+            {liabilityProgress.toFixed(1)}% of the absolute maximum system payout liability has been distributed to user
+            wallets so far.
           </p>
         </CardContent>
       </Card>

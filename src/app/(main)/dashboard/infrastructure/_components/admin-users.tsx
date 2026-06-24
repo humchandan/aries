@@ -1,13 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, ShieldAlert, CheckCircle, Search, Ban } from "lucide-react";
+
+import { Ban, CheckCircle, Loader2, Search, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useWeb3 } from "@/hooks/useWeb3";
 
 export function AdminUsers() {
@@ -21,7 +23,7 @@ export function AdminUsers() {
     if (!jwtToken || !isAdmin) return;
     try {
       const res = await fetch("/api/admin/users", {
-        headers: { Authorization: `Bearer ${jwtToken}` }
+        headers: { Authorization: `Bearer ${jwtToken}` },
       });
       if (res.ok) {
         const data = await res.json();
@@ -44,24 +46,24 @@ export function AdminUsers() {
 
   const toggleBan = async (walletAddress: string, currentlyBanned: boolean) => {
     if (!confirm(`Are you sure you want to ${currentlyBanned ? "UNBAN" : "BAN"} this user?`)) return;
-    
+
     setBanningAddress(walletAddress);
     try {
       const res = await fetch("/api/admin/users/ban", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${jwtToken}` 
+          Authorization: `Bearer ${jwtToken}`,
         },
-        body: JSON.stringify({ 
-          targetAddress: walletAddress, 
-          isBanned: !currentlyBanned 
-        })
+        body: JSON.stringify({
+          targetAddress: walletAddress,
+          isBanned: !currentlyBanned,
+        }),
       });
 
       if (res.ok) {
         toast.success(`User successfully ${currentlyBanned ? "unbanned" : "banned"}.`);
-        setUsers(users.map(u => u.walletAddress === walletAddress ? { ...u, isBanned: !currentlyBanned } : u));
+        setUsers(users.map((u) => (u.walletAddress === walletAddress ? { ...u, isBanned: !currentlyBanned } : u)));
       } else {
         const data = await res.json();
         toast.error(data.error || "Action failed");
@@ -73,9 +75,10 @@ export function AdminUsers() {
     }
   };
 
-  const filteredUsers = users.filter(u => 
-    u.walletAddress.toLowerCase().includes(search.toLowerCase()) || 
-    u.name.toLowerCase().includes(search.toLowerCase())
+  const filteredUsers = users.filter(
+    (u) =>
+      u.walletAddress.toLowerCase().includes(search.toLowerCase()) ||
+      u.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   if (!isAdmin) return null;
@@ -90,8 +93,8 @@ export function AdminUsers() {
           </div>
           <div className="relative w-64">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500" />
-            <Input 
-              placeholder="Search by name or wallet..." 
+            <Input
+              placeholder="Search by name or wallet..."
               className="pl-9 bg-zinc-900 border-zinc-800"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -130,15 +133,14 @@ export function AdminUsers() {
                         {user.name}
                         <div className="text-xs text-zinc-500">{user.mobile}</div>
                       </TableCell>
-                      <TableCell className="font-mono text-xs text-zinc-400">
-                        {user.walletAddress}
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {new Date(user.createdAt).toLocaleDateString()}
-                      </TableCell>
+                      <TableCell className="font-mono text-xs text-zinc-400">{user.walletAddress}</TableCell>
+                      <TableCell className="text-sm">{new Date(user.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell>
                         {user.isBanned ? (
-                          <Badge variant="destructive" className="bg-red-500/10 text-red-500 hover:bg-red-500/20 border-red-500/20">
+                          <Badge
+                            variant="destructive"
+                            className="bg-red-500/10 text-red-500 hover:bg-red-500/20 border-red-500/20"
+                          >
                             <ShieldAlert className="w-3 h-3 mr-1" /> Banned
                           </Badge>
                         ) : (
@@ -148,7 +150,7 @@ export function AdminUsers() {
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button 
+                        <Button
                           variant={user.isBanned ? "outline" : "destructive"}
                           size="sm"
                           disabled={banningAddress === user.walletAddress}
@@ -159,7 +161,9 @@ export function AdminUsers() {
                           ) : user.isBanned ? (
                             "Unban User"
                           ) : (
-                            <><Ban className="w-4 h-4 mr-1" /> Restrict</>
+                            <>
+                              <Ban className="w-4 h-4 mr-1" /> Restrict
+                            </>
                           )}
                         </Button>
                       </TableCell>

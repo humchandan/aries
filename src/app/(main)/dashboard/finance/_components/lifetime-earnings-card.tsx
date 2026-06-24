@@ -1,10 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
+import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWeb3 } from "@/hooks/useWeb3";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
 
 export function LifetimeEarningsCard() {
@@ -31,7 +32,7 @@ export function LifetimeEarningsCard() {
     const totalClaimed = parseFloat(userProfile.totalClaimed) || 0;
     const maxLimit = selfInvestment * 2.5;
 
-    let initialAccrued = baseYield + (elapsedSeconds * ratePerSec);
+    let initialAccrued = baseYield + elapsedSeconds * ratePerSec;
     if (totalClaimed + initialAccrued > maxLimit) {
       initialAccrued = maxLimit - totalClaimed;
     }
@@ -79,7 +80,7 @@ export function LifetimeEarningsCard() {
     },
   ];
 
-  const formatTooltipCurrency = (value: number) => 
+  const formatTooltipCurrency = (value: number) =>
     `${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ARES`;
 
   return (
@@ -102,23 +103,23 @@ export function LifetimeEarningsCard() {
               }}
             >
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#27272a" />
-              <XAxis 
-                dataKey="name" 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fill: "#a1a1aa", fontSize: 12 }} 
+              <XAxis
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#a1a1aa", fontSize: 12 }}
                 dy={10}
               />
-              <YAxis 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fill: "#71717a", fontSize: 12 }} 
-                tickFormatter={(val) => `${val >= 1000 ? (val/1000).toFixed(0) + 'k' : val}`}
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#71717a", fontSize: 12 }}
+                tickFormatter={(val) => `${val >= 1000 ? (val / 1000).toFixed(0) + "k" : val}`}
               />
               <Tooltip
-                cursor={{ fill: '#27272a', opacity: 0.4 }}
-                contentStyle={{ backgroundColor: '#09090b', borderColor: '#27272a', borderRadius: '8px' }}
-                itemStyle={{ color: '#fff' }}
+                cursor={{ fill: "#27272a", opacity: 0.4 }}
+                contentStyle={{ backgroundColor: "#09090b", borderColor: "#27272a", borderRadius: "8px" }}
+                itemStyle={{ color: "#fff" }}
                 formatter={(value: any) => [formatTooltipCurrency(Number(value)), "Amount"]}
               />
               <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={60}>
@@ -133,7 +134,10 @@ export function LifetimeEarningsCard() {
         {/* Data Breakdown Table underneath the graph */}
         <div className="grid grid-cols-2 gap-4 mt-8">
           {data.map((item, i) => (
-            <div key={i} className="flex items-center justify-between p-3.5 bg-zinc-950/40 rounded-xl border border-zinc-800/50">
+            <div
+              key={i}
+              className="flex items-center justify-between p-3.5 bg-zinc-950/40 rounded-xl border border-zinc-800/50"
+            >
               <div className="flex items-center gap-2.5">
                 <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.fill }} />
                 <span className="text-xs text-zinc-400 font-medium">{item.name}</span>

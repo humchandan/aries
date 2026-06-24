@@ -1,15 +1,11 @@
 "use client";
 
 import React from "react";
+
+import { ArrowUpRight, FileText } from "lucide-react";
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWeb3 } from "@/hooks/useWeb3";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { FileText, ArrowUpRight } from "lucide-react";
 
 export function MappedHistory() {
   const { userProfile } = useWeb3();
@@ -21,9 +17,7 @@ export function MappedHistory() {
           <FileText className="h-5 w-5 text-zinc-400" />
           <CardTitle>Staking History</CardTitle>
         </div>
-        <CardDescription>
-          Track all your active validation plan purchases.
-        </CardDescription>
+        <CardDescription>Track all your active validation plan purchases.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {!userProfile?.stakingPlans || userProfile.stakingPlans.length === 0 ? (
@@ -33,9 +27,7 @@ export function MappedHistory() {
         ) : (
           <div className="space-y-3 overflow-y-auto pr-1" style={{ maxHeight: "300px" }}>
             {userProfile.stakingPlans.map((plan: any, index: number) => {
-              const abbrHash = `${plan.txHash.substring(0, 6)}...${plan.txHash.substring(
-                plan.txHash.length - 4
-              )}`;
+              const abbrHash = `${plan.txHash.substring(0, 6)}...${plan.txHash.substring(plan.txHash.length - 4)}`;
               return (
                 <div
                   key={index}
