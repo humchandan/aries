@@ -55,6 +55,8 @@ export async function POST(request) {
         entry.type === "DEPOSIT" ||
         entry.type === "TRANSFER_IN" ||
         entry.type === "CLAIM_DIRECT" ||
+        entry.type === "NETWORK_REDEEM_UTILITY" ||
+        entry.type === "NETWORK_REDEEM" || // Backwards compatibility
         entry.type === "SPEND_REFUND"
       ) {
         balance += parseFloat(entry.netAmount || entry.amount);

@@ -25,7 +25,8 @@ export async function GET(request) {
         entry.type === "TRANSFER_IN" ||
         entry.type === "CLAIM_DIRECT" ||
         entry.type === "CLAIM_METAMASK_SPLIT" ||
-        entry.type === "NETWORK_REDEEM" ||
+        entry.type === "NETWORK_REDEEM_UTILITY" ||
+        entry.type === "NETWORK_REDEEM" || // Backwards compatibility
         entry.type === "SPEND_REFUND"
       ) {
         balance += net;

@@ -467,7 +467,7 @@ export default function RevolutLanding() {
           >
             {loading ? (
               <>
-                <i className="fa-solid fa-spinner fa-spin" /> &nbsp;Loading
+                <i className="fa-solid fa-spinner fa-spin" /> Loading
               </>
             ) : userAddress ? (
               "Open App →"
