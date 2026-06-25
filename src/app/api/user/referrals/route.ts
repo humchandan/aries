@@ -80,7 +80,44 @@ export async function GET(request: Request) {
       return total;
     };
 
-    // 4. Traverse up to 10 levels to find the referrals
+    // 4. Calculate user's referral commission metrics (NetworkEarning)
+    const userCommissionEntries = await prisma.networkEarning.findMany({
+      where: { userAddress: walletAddress.toLowerCase() },
+    });
+    
+    // Lifetime Total Generated Income (unclaimed + claimed)
+    const totalReferralIncome = userCommissionEntries.reduce((acc, curr) => acc + Number(curr.amount), 0);
+    // Available/Unclaimed income (isClaimed = false)
+    const availableReferralIncome = userCommissionEntries.filter((e) => !e.isClaimed).reduce((acc, curr) => acc + Number(curr.amount), 0);
+    // Redeemed/Withdrawn income (isClaimed = true)
+    const withdrawnReferralIncome = userCommissionEntries.filter((e) => e.isClaimed).reduce((acc, curr) => acc + Number(curr.amount), 0);
+    
+    // Pending release commissions (Commissions locked until downlines make a withdrawal)
+    // To represent this dynamically: we can sum up matching level commission weights on active downline investments 
+    // where no yield claims/withdrawals have been executed yet by the downline stakers.
+    // For dummy testing scenarios, we calculate pending commissions dynamically based on unwithdrawn downline plans:
+    let pendingReferralIncome = 0;
+    
+    // Find all downlines and check their total unwithdrawn staking yield to compute locked commission
+    // Or we can mock pending based on totalReferralIncome * 0.4 fallback if no database model tracks unreleased queue
+    const claimsMap = new Map<string, number>();
+    const claimHistories = await prisma.claimHistory.findMany();
+    claimHistories.forEach(c => {
+      const addr = c.userAddress.toLowerCase();
+      if (!claimsMap.has(addr)) claimsMap.set(addr, 0);
+      claimsMap.set(addr, claimsMap.get(addr)! + Number(c.grossAmount));
+    });
+
+    // Simple matching calculation to show true pending commission where downline staker has staking plan but no withdrawals
+    const levelsMap = new Map<number, number>([
+      [1, 0.10], // 10%
+      [2, 0.05], // 5%
+      [3, 0.03], // 3%
+      [4, 0.02], // 2%
+      [5, 0.01], // 1%
+    ]);
+
+    // 5. Traverse up to 10 levels to find the referrals
     const referrals: any[] = [];
     const bfsVisited = new Set<string>();
     bfsVisited.add(walletAddress.toLowerCase());
@@ -109,6 +146,14 @@ export async function GET(request: Request) {
         const selfStaking = stakingMap.get(addr) || 0;
         const status = selfStaking > 0 ? "Active" : "Inactive";
 
+        // Calculate potential unreleased pending commission if downline user has staked,
+        // but has executed NO withdrawals/claims historically (so the commission remains locked).
+        const downlineClaims = claimsMap.get(addr) || 0;
+        if (selfStaking > 0 && downlineClaims === 0) {
+          const levelMultiplier = levelsMap.get(level) || 0;
+          pendingReferralIncome += selfStaking * levelMultiplier;
+        }
+
         referrals.push({
           walletAddress: userNode.walletAddress,
           sponsorAddress: userNode.sponsorAddress,
@@ -135,7 +180,16 @@ export async function GET(request: Request) {
       }
     }
 
-    return NextResponse.json({ referrals });
+    return NextResponse.json({
+      referrals,
+      stats: {
+        lifetimeTotal: totalReferralIncome + pendingReferralIncome,
+        totalReferralIncome,
+        availableReferralIncome,
+        pendingReferralIncome,
+        withdrawnReferralIncome,
+      },
+    });
   } catch (error) {
     console.error("Referrals fetch error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

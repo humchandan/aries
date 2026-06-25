@@ -13,13 +13,18 @@ export function ReferralsPage() {
   const [referrals, setReferrals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [mlmTiers, setMlmTiers] = useState<any[]>([]);
+  const [stats, setStats] = useState<any>({
+    totalReferralIncome: 0,
+    availableReferralIncome: 0,
+    pendingReferralIncome: 0,
+  });
 
   useEffect(() => {
     if (!jwtToken) return;
 
     const fetchData = async () => {
       try {
-        const referralEndpoint = isAdmin ? "/api/admin/referrals" : "/api/user/referrals";
+        const referralEndpoint = "/api/user/referrals";
         const [refRes, configRes] = await Promise.all([
           fetch(referralEndpoint, { headers: { Authorization: `Bearer ${jwtToken}` } }),
           fetch("/api/user/mlm/config", { headers: { Authorization: `Bearer ${jwtToken}` } }),
@@ -28,6 +33,9 @@ export function ReferralsPage() {
         if (refRes.ok) {
           const data = await refRes.json();
           setReferrals(data.referrals || []);
+          if (data.stats) {
+            setStats(data.stats);
+          }
         }
 
         if (configRes.ok) {
@@ -61,5 +69,5 @@ export function ReferralsPage() {
     );
   }
 
-  return <Referrals referrals={referrals} mlmTiers={mlmTiers} />;
+  return <Referrals referrals={referrals} mlmTiers={mlmTiers} stats={stats} />;
 }

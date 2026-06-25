@@ -14,7 +14,7 @@ import {
   useReactTable,
   type VisibilityState,
 } from "@tanstack/react-table";
-import { Cog, Download, Grid, Plus, Rows3, Search, SlidersHorizontal } from "lucide-react";
+import { Cog, Download, Grid, Plus, Rows3, Search, SlidersHorizontal, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,7 +27,20 @@ import { filters } from "./data";
 import { referralsColumns } from "./referrals-columns";
 import { ReferralsTable } from "./referrals-table";
 
-export function Referrals({ referrals, mlmTiers }: { referrals: any[]; mlmTiers: any[] }) {
+export function Referrals({
+  referrals,
+  mlmTiers,
+  stats,
+}: {
+  referrals: any[];
+  mlmTiers: any[];
+  stats?: {
+    lifetimeTotal?: number;
+    totalReferralIncome: number;
+    availableReferralIncome: number;
+    pendingReferralIncome: number;
+  };
+}) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [sorting, setSorting] = React.useState<SortingState>([{ id: "joinedDate", desc: true }]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -39,6 +52,7 @@ export function Referrals({ referrals, mlmTiers }: { referrals: any[]; mlmTiers:
     pageIndex: 0,
     pageSize: 10,
   });
+  const [processing, setProcessing] = React.useState<boolean>(false);
 
   const table = useReactTable({
     data: referrals,
@@ -72,8 +86,142 @@ export function Referrals({ referrals, mlmTiers }: { referrals: any[]; mlmTiers:
     table.setPageIndex(0);
   }
 
+  const commissionStats = stats || {
+    lifetimeTotal: 0,
+    totalReferralIncome: 0,
+    availableReferralIncome: 0,
+    pendingReferralIncome: 0,
+  };
+
+  const displayLifetime = commissionStats.lifetimeTotal !== undefined ? commissionStats.lifetimeTotal : commissionStats.totalReferralIncome;
+
   return (
-    <Card>
+    <div className="space-y-6">
+      {/* Commission Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="bg-zinc-900/40 border-zinc-800/80">
+          <CardHeader className="pb-2">
+            <CardDescription className="text-xs uppercase font-bold tracking-wider text-zinc-500">Lifetime Total</CardDescription>
+            <CardTitle className="text-2xl font-black text-white">
+              {displayLifetime.toLocaleString(undefined, { minimumFractionDigits: 2 })} ARES
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-zinc-500">Total commissions generated from Levels 1 to 10 (Lifetime)</p>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-zinc-900/40 border-zinc-800/80 flex flex-col justify-between">
+          <div>
+            <CardHeader className="pb-2">
+              <CardDescription className="text-xs uppercase font-bold tracking-wider text-green-500">Available for Withdrawal</CardDescription>
+              <CardTitle className="text-2xl font-black text-green-400">
+                {commissionStats.availableReferralIncome.toLocaleString(undefined, { minimumFractionDigits: 2 })} ARES
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-zinc-500">Released once downline investors execute withdrawals.</p>
+              {commissionStats.availableReferralIncome > 0 && (
+                <p className="text-[11px] text-amber-500/90 font-medium mt-1">
+                  Net payout: {(commissionStats.availableReferralIncome * 0.9).toLocaleString(undefined, { minimumFractionDigits: 2 })} ARES (10% fee applied)
+                </p>
+              )}
+            </CardContent>
+          </div>
+          {commissionStats.availableReferralIncome > 0 && (
+            <div className="px-6 pb-6 pt-0 flex flex-col gap-2">
+              <Button
+                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold h-9 text-xs"
+                disabled={processing}
+                onClick={async () => {
+                  try {
+                    setProcessing(true);
+                    const jwt = localStorage.getItem("jwt_token");
+                    if (!jwt) return;
+                    const res = await fetch("/api/user/network/redeem", {
+                      method: "POST",
+                      headers: {
+                        Authorization: `Bearer ${jwt}`,
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({ destination: "metamask" }),
+                    });
+                    const json = await res.json();
+                    if (json.success) {
+                      alert(`Successfully redeemed ${json.amount} ARES directly to MetaMask!`);
+                      window.location.reload();
+                    } else {
+                      alert(json.error || "Redemption failed.");
+                    }
+                  } catch (e) {
+                    console.error(e);
+                    alert("Error processing network redeem transaction.");
+                  } finally {
+                    setProcessing(false);
+                  }
+                }}
+              >
+                {processing ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</>
+                ) : (
+                  "⚡ Withdraw to MetaMask"
+                )}
+              </Button>
+              <Button
+                className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold h-9 text-xs border border-zinc-700/60"
+                disabled={processing}
+                onClick={async () => {
+                  try {
+                    setProcessing(true);
+                    const jwt = localStorage.getItem("jwt_token");
+                    if (!jwt) return;
+                    const res = await fetch("/api/user/network/redeem", {
+                      method: "POST",
+                      headers: {
+                        Authorization: `Bearer ${jwt}`,
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({ destination: "utility" }),
+                    });
+                    const json = await res.json();
+                    if (json.success) {
+                      alert(`Successfully transferred ${json.amount} ARES directly to Utility Wallet!`);
+                      window.location.reload();
+                    } else {
+                      alert(json.error || "Transfer failed.");
+                    }
+                  } catch (e) {
+                    console.error(e);
+                    alert("Error processing utility transfer transaction.");
+                  } finally {
+                    setProcessing(false);
+                  }
+                }}
+              >
+                {processing ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</>
+                ) : (
+                  "💼 Transfer to Utility Wallet"
+                )}
+              </Button>
+            </div>
+          )}
+        </Card>
+
+        <Card className="bg-zinc-900/40 border-zinc-800/80">
+          <CardHeader className="pb-2">
+            <CardDescription className="text-xs uppercase font-bold tracking-wider text-amber-500">Pending Release</CardDescription>
+            <CardTitle className="text-2xl font-black text-amber-400">
+              {commissionStats.pendingReferralIncome.toLocaleString(undefined, { minimumFractionDigits: 2 })} ARES
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-zinc-500">Commissions locked until downline stakers make a withdrawal</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
       <CardHeader className="border-b has-data-[slot=card-action]:grid-cols-1 md:has-data-[slot=card-action]:grid-cols-[1fr_auto]">
         <CardTitle className="text-xl leading-none">Your Referrals</CardTitle>
         <CardDescription className="max-w-sm leading-snug">
@@ -127,5 +275,6 @@ export function Referrals({ referrals, mlmTiers }: { referrals: any[]; mlmTiers:
         <ReferralsTable table={table} />
       </CardContent>
     </Card>
-  );
+  </div>
+);
 }
