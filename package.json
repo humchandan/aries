@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
-    "start": "next start",
+    "start": "concurrently \"next start\" \"npm run sweep\"",
     "lint": "biome lint",
     "format": "biome format --write",
     "check": "biome check",
@@ -18,7 +18,9 @@
     "sweep": "ts-node -P tsconfig.scripts.json src/sweeper.ts"
   },
   "lint-staged": {
-    "*.{js,ts,jsx,tsx}": ["biome check --write --no-errors-on-unmatched"]
+    "*.{js,ts,jsx,tsx}": [
+      "biome check --write --no-errors-on-unmatched"
+    ]
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -34,6 +36,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "concurrently": "^10.0.3",
     "d3-geo": "^3.1.1",
     "date-fns": "^4.4.0",
     "embla-carousel-react": "^8.6.0",
