@@ -2,9 +2,10 @@
 
 import { useMemo } from "react";
 
+import Image from "next/image";
 import Link from "next/link";
 
-import { CircleHelp, ClipboardList, Command, Database, File, Search, Settings } from "lucide-react";
+import { CircleHelp, ClipboardList, Database, File, Search, Settings } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 
 import {
@@ -72,30 +73,52 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     })),
   );
 
-  const { isAdmin } = useWeb3();
+  const { isAdmin, userProfile, userAddress } = useWeb3();
 
   const variant = isSynced ? sidebarVariant : props.variant;
   const collapsible = isSynced ? sidebarCollapsible : props.collapsible;
 
   const filteredItems = useMemo(() => {
-    return sidebarItems.map((group) => {
-      if (isAdmin) return group;
-      return {
-        ...group,
-        items: group.items.filter((item) => item.id !== "infrastructure"),
-      };
-    });
+    return sidebarItems
+      .filter((group) => {
+        // If it's the Pages group (id: 2), only allow if user is admin
+        if (group.id === 2) {
+          return isAdmin;
+        }
+        return true;
+      })
+      .map((group) => {
+        if (isAdmin) return group;
+        return {
+          ...group,
+          items: group.items.filter(
+            (item) => item.id !== "infrastructure" && item.id !== "crm" && item.id !== "analytics",
+          ),
+        };
+      });
   }, [isAdmin]);
+
+  const welcomeText = useMemo(() => {
+    if (userProfile?.name) {
+      return `Welcome ${userProfile.name}`;
+    }
+    if (userAddress) {
+      return `Welcome ${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
+    }
+    return "Welcome Guest";
+  }, [userProfile, userAddress]);
 
   return (
     <Sidebar {...props} variant={variant} collapsible={collapsible}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <Link prefetch={false} href="/dashboard/default">
-                <Command />
-                <span className="font-semibold text-base">{APP_CONFIG.name}</span>
+            <SidebarMenuButton asChild className="h-12 py-2">
+              <Link prefetch={false} href="/dashboard/default" className="flex items-center gap-3">
+                <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-md">
+                  <Image src="/ares-logo.png" alt="Ares Logo" fill className="object-contain" />
+                </div>
+                <span className="font-semibold text-sm truncate">{welcomeText}</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
