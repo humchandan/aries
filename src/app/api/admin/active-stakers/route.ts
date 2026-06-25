@@ -1,3 +1,5 @@
+import type { StakingPlan, User } from "@prisma/client";
+
 import { verifyAdmin, verifyToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -16,16 +18,16 @@ export async function GET(request: Request) {
 
     // Map investments
     const investmentMap: Record<string, number> = {};
-    allPlans.forEach((p) => {
+    allPlans.forEach((p: StakingPlan) => {
       const addr = p.userAddress.toLowerCase();
       if (!investmentMap[addr]) investmentMap[addr] = 0;
       investmentMap[addr] += Number(p.amount);
     });
 
     // Map sponsors
-    const sponsorMap: Record<string, any[]> = {};
-    const userMap: Record<string, any> = {};
-    allUsers.forEach((u) => {
+    const sponsorMap: Record<string, User[]> = {};
+    const userMap: Record<string, User> = {};
+    allUsers.forEach((u: User) => {
       const sp = u.sponsorAddress.toLowerCase();
       if (!sponsorMap[sp]) sponsorMap[sp] = [];
       sponsorMap[sp].push(u);
@@ -67,7 +69,7 @@ export async function GET(request: Request) {
         if (currentLevel > 100) return;
         const cleanAddr = addr.toLowerCase();
         const children = sponsorMap[cleanAddr] || [];
-        children.forEach((child) => {
+        children.forEach((child: User) => {
           const childAddr = child.walletAddress.toLowerCase();
           if (visited.has(childAddr)) return;
           visited.add(childAddr);
@@ -83,12 +85,12 @@ export async function GET(request: Request) {
     }
 
     // Filter active stakers
-    const activeStakers = allUsers.filter((u) => {
+    const activeStakers = allUsers.filter((u: User) => {
       const addr = u.walletAddress.toLowerCase();
       return investmentMap[addr] && investmentMap[addr] > 0;
     });
 
-    const data = activeStakers.map((u) => {
+    const data = activeStakers.map((u: User) => {
       const addr = u.walletAddress.toLowerCase();
       const level = getLevelFromTarget(addr);
 
@@ -105,7 +107,7 @@ export async function GET(request: Request) {
     });
 
     // Sort by staked amount descending
-    data.sort((a, b) => b.staked - a.staked);
+    data.sort((a: any, b: any) => b.staked - a.staked);
 
     return Response.json({ success: true, data });
   } catch (err) {
