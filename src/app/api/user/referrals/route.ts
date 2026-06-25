@@ -66,8 +66,11 @@ export async function GET(request: Request) {
         if (visited.has(current)) continue;
         visited.add(current);
 
-        // Let's include their own:
-        total += stakingMap.get(current) || 0;
+        // Do not include their own personal investment in "Team Business" (L1-L10) if they are the starting node.
+        // But do include it for descendants.
+        if (current !== addr) {
+          total += stakingMap.get(current) || 0;
+        }
 
         const children = childrenMap.get(current) || [];
         for (const child of children) {
@@ -103,17 +106,20 @@ export async function GET(request: Request) {
       if (userNode) {
         // Calculate team business
         const teamBusiness = calculateTeamBusiness(addr);
+        const selfStaking = stakingMap.get(addr) || 0;
+        const status = selfStaking > 0 ? "Active" : "Inactive";
 
         referrals.push({
           walletAddress: userNode.walletAddress,
           sponsorAddress: userNode.sponsorAddress,
           name: userNode.name,
-          // Hide mobile if level > 1
-          mobile: level === 1 ? userNode.mobile : "***-***-****",
+          mobile: userNode.mobile,
           rank: userNode.rank,
           level,
           uplineName,
+          selfStake: selfStaking,
           teamBusiness,
+          status,
           joinedDate: userNode.createdAt,
         });
 
