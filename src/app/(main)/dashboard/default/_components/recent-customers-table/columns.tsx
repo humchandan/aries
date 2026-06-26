@@ -6,6 +6,7 @@ import { UserRound } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+
 import type { RecentCustomerRow } from "./schema";
 
 export const recentCustomersColumns: ColumnDef<RecentCustomerRow>[] = [
@@ -36,7 +37,7 @@ export const recentCustomersColumns: ColumnDef<RecentCustomerRow>[] = [
     header: "Customer",
     cell: ({ row }) => {
       const isL1 = row.original.level === 1;
-      const formattedName = isL1 ? row.original.name : row.original.name.charAt(0) + "...";
+      const formattedName = row.original.name;
       const customerDetail = isL1
         ? row.original.mobile
         : `${row.original.walletAddress.substring(0, 6)}...${row.original.walletAddress.substring(row.original.walletAddress.length - 4)}`;
